@@ -157,4 +157,5 @@ def index():
 # ── Start server ──────────────────────────────────────────────────
 # HuggingFace Spaces requires port 7860
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=7860, debug=False)
+   from waitress import waitress_serve
+   waitress_serve(app, host="0.0.0.0", port=7860)
