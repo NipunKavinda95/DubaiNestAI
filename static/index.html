@@ -392,8 +392,7 @@
   const welcome = document.getElementById('welcome');
   const input   = document.getElementById('input');
   const sendBtn = document.getElementById('send');
-  const dot     = document.getElementById('dot');
-  const API_BASE = '__API_BASE_URL__';
+  const API_BASE = '';  // same-origin — served by Flask
 
   // ── Auto-resize textarea ──────────────────────────────────────
   input.addEventListener('input', () => {
@@ -495,14 +494,12 @@
         appendMsg('bot', '⚠️ ' + data.error);
       } else {
         appendMsg('bot', data.answer);
-        dot.classList.add('live');
       }
 
     } catch (err) {
       removeTyping();
-      appendMsg('bot', '❌ Could not reach the backend. Make sure your Colab Cell 9 is still running and the URL is correct.');
-      dot.classList.remove('live');
-    }
+      appendMsg('bot', '❌ Could not reach the backend. Please refresh and try again.');
+      }
 
     sendBtn.disabled = false;
     input.focus();
