@@ -1,6 +1,3 @@
-# HuggingFace Spaces — Docker SDK
-# Python 3.11 slim base image
-
 FROM python:3.11-slim
 
 # Set working directory
@@ -19,6 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy app code and data files
 COPY app.py .
 COPY data/ ./data/
+COPY static/ ./static/
 
 # HuggingFace Spaces requires port 7860
 EXPOSE 7860

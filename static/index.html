@@ -398,7 +398,7 @@
   const input   = document.getElementById('input');
   const sendBtn = document.getElementById('send');
   const dot     = document.getElementById('dot');
-  const apiInput = document.getElementById('apiUrl');
+  const API_BASE = '__API_BASE_URL__';
 
   // ── Auto-resize textarea ──────────────────────────────────────
   input.addEventListener('input', () => {
@@ -416,8 +416,7 @@
 
   // ── Test connection ───────────────────────────────────────────
   async function testConnection() {
-    const url = apiInput.value.trim().replace(/\/$/, '');
-    if (!url) return alert('Please paste your ngrok URL first!');
+    const url = API_BASE;
     try {
       const res = await fetch(`${url}/health`);
       const data = await res.json();

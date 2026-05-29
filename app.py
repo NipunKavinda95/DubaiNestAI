@@ -8,7 +8,7 @@ and serves it via Flask on port 7860 (HuggingFace default port).
 """
 
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 
 
@@ -76,7 +76,7 @@ print("✅ VectorStore ready")
 
 # 4. Build LCEL RAG chain
 llm = ChatOpenAI(
-    model="gpt-4o",
+    model="gpt-4o-mini",
     temperature=0,
     max_tokens=800,
     openai_api_key=OPENAI_API_KEY
@@ -91,7 +91,7 @@ Rules:
 - Answer ONLY using the CONTEXT provided below. Do not use outside knowledge.
 - If the answer is not in the context, say: "I don't have that in my
   knowledge base. Please check dubailand.gov.ae or a licensed agent."
-- Always quote prices in AED.
+- Always quote prices in AED also some ask for any other currencies please convert AED values to that currency.
 - Be concise. Use bullet points for comparisons and lists.
 - Never give legal advice. For legal matters refer users to RDSC.
 
@@ -149,14 +149,9 @@ def health():
 
 @app.route("/", methods=["GET"])
 def index():
-    return jsonify({
-        "name": "DubaiNest AI",
-        "description": "Dubai Real Estate RAG Assistant",
-        "endpoints": {
-            "POST /chat": "Ask a question",
-            "GET /health": "Health check"
-        }
-    })
+    html = open("static/index.html", encoding="utf-8").read()
+    html = html.replace("__API_BASE_URL__", "")
+    return render_template_string(html)
 
 
 # ── Start server ──────────────────────────────────────────────────
