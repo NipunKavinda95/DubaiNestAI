@@ -11,6 +11,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+
 # ── LangChain imports ─────────────────────────────────────────────
 from langchain_community.document_loaders import CSVLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -20,12 +21,14 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
+from dotenv import load_dotenv
+load_dotenv()  
+
 # ── Flask app ─────────────────────────────────────────────────────
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# ── Load OpenAI API key from HuggingFace Space secret ────────────
-# Set this in: HuggingFace Space → Settings → Variables and Secrets
+# ── Load OpenAI API key ───────────────────────────────────────────
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 # ── Build RAG pipeline on startup ────────────────────────────────
