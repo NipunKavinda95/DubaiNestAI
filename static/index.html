@@ -354,12 +354,7 @@
     </div>
   </div>
 
-  <div class="api-bar">
-    <span class="status-dot" id="dot"></span>
-    <label>API URL</label>
-    <input id="apiUrl" type="text" placeholder="Paste your ngrok URL here e.g. https://abc123.ngrok-free.app"/>
-    <button onclick="testConnection()" style="background:var(--gold-dim);border:1px solid var(--border);color:var(--gold);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;">Connect</button>
-  </div>
+  
 </header>
 
 <!-- ── Chat ── -->
@@ -414,21 +409,7 @@
     }
   });
 
-  // ── Test connection ───────────────────────────────────────────
-  async function testConnection() {
-    const url = API_BASE;
-    try {
-      const res = await fetch(`${url}/health`);
-      const data = await res.json();
-      if (data.status === 'ok') {
-        dot.classList.add('live');
-        alert('✅ Connected to ' + data.bot);
-      }
-    } catch {
-      dot.classList.remove('live');
-      alert('❌ Could not connect. Make sure your Colab Cell 9 is running.');
-    }
-  }
+  
 
   // ── Append a message bubble ───────────────────────────────────
   function appendMsg(role, text) {
@@ -491,11 +472,7 @@
     const question = input.value.trim();
     if (!question) return;
 
-    const url = apiInput.value.trim().replace(/\/$/, '');
-    if (!url) {
-      alert('⚠️ Paste your ngrok URL in the top bar first, then click Connect!');
-      return;
-    }
+    const url = API_BASE;
 
     // Show user message
     appendMsg('user', question);
