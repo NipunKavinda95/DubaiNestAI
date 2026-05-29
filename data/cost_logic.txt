@@ -1,0 +1,126 @@
+DUBAI RENTAL COST CALCULATOR — COMPLETE MOVE-IN COST GUIDE
+Reference: Dubai real estate market standard costs (2024)
+
+========================================
+SECTION 1 — MOVE-IN COST FORMULA
+========================================
+
+Total move-in cost = Annual Rent + Security Deposit + Agency Fee + Ejari + DEWA Deposit + Chiller Deposit (if applicable)
+
+FORMULA:
+  Security Deposit     = Annual Rent × 5%   (unfurnished)
+  Security Deposit     = Annual Rent × 10%  (furnished)
+  Agency Fee           = Annual Rent × 5%   (standard — negotiable)
+  Ejari Registration   = AED 220 (fixed government fee)
+  DEWA Deposit         = AED 2,000 (apartment) or AED 4,000 (villa)
+  Chiller Deposit      = AED 1,000 to AED 2,000 (only in district cooling areas)
+  Moving Cost estimate = AED 1,500 to AED 5,000 (optional, depends on volume)
+
+========================================
+SECTION 2 — WORKED EXAMPLES
+========================================
+
+EXAMPLE 1 — Studio apartment at AED 40,000/year (unfurnished):
+  Annual Rent:          40,000
+  Security Deposit 5%:   2,000
+  Agency Fee 5%:         2,000
+  Ejari:                   220
+  DEWA Deposit:          2,000
+  TOTAL MOVE-IN:        46,220 AED
+
+EXAMPLE 2 — 1BR apartment at AED 70,000/year (unfurnished):
+  Annual Rent:          70,000
+  Security Deposit 5%:   3,500
+  Agency Fee 5%:         3,500
+  Ejari:                   220
+  DEWA Deposit:          2,000
+  TOTAL MOVE-IN:        79,220 AED
+
+EXAMPLE 3 — 2BR apartment at AED 110,000/year (unfurnished):
+  Annual Rent:         110,000
+  Security Deposit 5%:   5,500
+  Agency Fee 5%:         5,500
+  Ejari:                   220
+  DEWA Deposit:          2,000
+  TOTAL MOVE-IN:       123,220 AED
+
+EXAMPLE 4 — 1BR furnished at AED 90,000/year:
+  Annual Rent:          90,000
+  Security Deposit 10%:  9,000
+  Agency Fee 5%:         4,500
+  Ejari:                   220
+  DEWA Deposit:          2,000
+  TOTAL MOVE-IN:       105,720 AED
+
+EXAMPLE 5 — 3BR villa at AED 200,000/year (unfurnished):
+  Annual Rent:         200,000
+  Security Deposit 5%:  10,000
+  Agency Fee 5%:        10,000
+  Ejari:                   220
+  DEWA Deposit:          4,000
+  TOTAL MOVE-IN:       224,220 AED
+
+========================================
+SECTION 3 — ONGOING MONTHLY COSTS
+========================================
+
+After move-in, expect these monthly costs on top of rent:
+
+DEWA (electricity + water):
+  Studio:       AED 250 to 400/month
+  1 Bedroom:    AED 350 to 600/month
+  2 Bedroom:    AED 500 to 900/month
+  3 Bedroom:    AED 700 to 1,200/month
+  Villa:        AED 1,000 to 3,000/month (depending on pool, garden)
+
+District Cooling (Chiller) — applies in areas like Business Bay, DIFC, Downtown, JBR, Palm:
+  Studio:       AED 300 to 500/month
+  1 Bedroom:    AED 450 to 700/month
+  2 Bedroom:    AED 600 to 1,000/month
+  Note: Chiller is billed separately from DEWA in district-cooled buildings.
+
+Internet:
+  Standard package: AED 300 to 500/month (Etisalat or du)
+
+Service Charges (paid by owner, sometimes passed to tenant in rent):
+  Average: AED 10 to 25 per square foot per year
+  Example: 800 sqft apartment × AED 15 = AED 12,000/year = AED 1,000/month added to rent
+
+Municipality Tax (Housing Fee):
+  5% of annual rent, collected by DEWA monthly
+  Example: AED 70,000 rent = AED 3,500/year = AED 292/month added to DEWA bill
+
+========================================
+SECTION 4 — COST SAVING TIPS
+========================================
+
+1. Pay in fewer cheques: Offering 1 or 2 cheques instead of 4 gives negotiating power. Can save 5 to 10% on rent.
+
+2. Negotiate agency fee: In a soft market or vacant unit, agency fee is negotiable. Some landlords cover it.
+
+3. Avoid furnished if you have furniture: Furnished adds 5% to deposit and typically 20 to 40% to rent.
+
+4. Check if chiller is included: Some buildings include chiller in service charges. Ask before signing.
+
+5. Compare Ejari renewal vs new contract: Renewing existing contract is cheaper than a new registration.
+
+6. Time your move: Q1 (Jan-March) tends to have more vacancies and negotiable prices. Q3 (July-Sept) is high season.
+
+========================================
+SECTION 5 — TOTAL COST QUICK REFERENCE TABLE
+========================================
+
+Annual Rent   | Deposit (5%) | Agency (5%) | Ejari | DEWA  | Total Move-In
+AED 30,000    | 1,500        | 1,500       | 220   | 2,000 | 35,220
+AED 40,000    | 2,000        | 2,000       | 220   | 2,000 | 46,220
+AED 50,000    | 2,500        | 2,500       | 220   | 2,000 | 57,220
+AED 60,000    | 3,000        | 3,000       | 220   | 2,000 | 68,220
+AED 70,000    | 3,500        | 3,500       | 220   | 2,000 | 79,220
+AED 80,000    | 4,000        | 4,000       | 220   | 2,000 | 90,220
+AED 90,000    | 4,500        | 4,500       | 220   | 2,000 | 101,220
+AED 100,000   | 5,000        | 5,000       | 220   | 2,000 | 112,220
+AED 120,000   | 6,000        | 6,000       | 220   | 2,000 | 134,220
+AED 150,000   | 7,500        | 7,500       | 220   | 4,000 | 169,220
+AED 200,000   | 10,000       | 10,000      | 220   | 4,000 | 224,220
+AED 300,000   | 15,000       | 15,000      | 220   | 4,000 | 334,220
+

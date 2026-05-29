@@ -1,0 +1,50 @@
+area,emirate,unit_type,min_rent_aed,max_rent_aed,avg_rent_aed,price_per_sqft,rental_yield_pct,villa_min_aed,villa_max_aed,metro_access,mall_nearby,best_for,notes
+Downtown Dubai,Dubai,Studio,70000,95000,82000,180,5.2,,,Yes,Dubai Mall,Young professionals / tourists,Iconic Burj Khalifa views. High demand year-round.
+Downtown Dubai,Dubai,1BR,110000,160000,135000,175,5.0,,,Yes,Dubai Mall,Couples / expats,Prime location. Limited supply keeps prices high.
+Downtown Dubai,Dubai,2BR,170000,250000,210000,170,4.8,,,Yes,Dubai Mall,Families / executives,Prestigious address. Older buildings more affordable.
+Downtown Dubai,Dubai,3BR,250000,400000,320000,165,4.5,,,Yes,Dubai Mall,Families,Rare availability. Book well in advance.
+Dubai Marina,Dubai,Studio,55000,80000,67000,155,6.1,,,Yes,Marina Mall,Young professionals,Waterfront lifestyle. Very high tenant demand.
+Dubai Marina,Dubai,1BR,85000,130000,107000,150,5.8,,,Yes,Marina Mall,Couples / expats,Walking distance to beach and JBR.
+Dubai Marina,Dubai,2BR,130000,200000,165000,145,5.5,,,Yes,Marina Mall,Families,Vibrant nightlife and dining scene nearby.
+Dubai Marina,Dubai,3BR,200000,320000,255000,140,5.2,,,Yes,Marina Mall,Families,Premium units in newer towers command top prices.
+JVC (Jumeirah Village Circle),Dubai,Studio,30000,45000,37000,85,7.8,,,No,Circle Mall,Budget-conscious singles,Affordable. Community feel. Bus connectivity only.
+JVC (Jumeirah Village Circle),Dubai,1BR,50000,72000,61000,80,7.5,,,No,Circle Mall,Young families / couples,Best value mid-market. Many new buildings.
+JVC (Jumeirah Village Circle),Dubai,2BR,75000,105000,90000,78,7.2,,,No,Circle Mall,Families,Spacious units. Growing retail and F&B options.
+JVC (Jumeirah Village Circle),Dubai,3BR,110000,160000,135000,75,6.8,,,No,Circle Mall,Families,Villas also available in lower price range.
+Business Bay,Dubai,Studio,55000,80000,67000,160,6.5,,,Yes,Dubai Mall,Professionals,Close to DIFC. Canal views in premium units.
+Business Bay,Dubai,1BR,85000,130000,107000,155,6.2,,,Yes,Dubai Mall,Couples / professionals,Walk to Downtown. Strong rental demand.
+Business Bay,Dubai,2BR,130000,200000,160000,150,5.9,,,Yes,Dubai Mall,Families,Mix of serviced and residential units.
+JBR (Jumeirah Beach Residence),Dubai,Studio,70000,95000,82000,165,5.8,,,Yes,The Beach JBR,Beach lovers,Beachfront living. Tourist-friendly area.
+JBR (Jumeirah Beach Residence),Dubai,1BR,110000,155000,132000,160,5.5,,,Yes,The Beach JBR,Couples / expats,Iconic walk. High footfall and lifestyle amenities.
+JBR (Jumeirah Beach Residence),Dubai,2BR,160000,240000,200000,155,5.2,,,Yes,The Beach JBR,Families,Sea-view units command significant premium.
+Deira,Dubai,Studio,22000,38000,30000,70,8.5,,,Yes,Deira City Centre,Budget renters / blue collar,Oldest part of Dubai. Very affordable. Good metro.
+Deira,Dubai,1BR,35000,60000,47000,65,8.2,,,Yes,Deira City Centre,Small families,Multicultural. Gold Souk and spice markets nearby.
+Deira,Dubai,2BR,55000,85000,70000,62,7.9,,,Yes,Deira City Centre,Families,Large apartments. Some older buildings need renovation.
+Bur Dubai,Dubai,Studio,25000,40000,32000,72,8.3,,,Yes,BurJuman,Budget renters,Heritage area. Metro access. Mix of old and new.
+Bur Dubai,Dubai,1BR,38000,65000,51000,68,8.0,,,Yes,BurJuman,Small families / couples,Good value. Close to hospital and government offices.
+Bur Dubai,Dubai,2BR,60000,90000,75000,65,7.7,,,Yes,BurJuman,Families,Spacious older buildings. Well-established community.
+Al Nahda (Dubai),Dubai,Studio,28000,42000,35000,75,8.0,,,Yes,Sahara Centre,Budget renters,Dubai-Sharjah border. Metro access. Very affordable.
+Al Nahda (Dubai),Dubai,1BR,42000,65000,53000,70,7.8,,,Yes,Sahara Centre,Families / commuters,Popular with Sharjah workers. Good schools nearby.
+Al Nahda (Dubai),Dubai,2BR,62000,90000,76000,67,7.5,,,Yes,Sahara Centre,Families,Larger units. Some buildings older but well-maintained.
+Dubai Silicon Oasis,Dubai,Studio,28000,42000,35000,72,8.1,,,No,Souq Extra,Tech workers / students,Free zone area. IT companies. Affordable and modern.
+Dubai Silicon Oasis,Dubai,1BR,42000,62000,52000,68,7.9,,,No,Souq Extra,Professionals,Good quality buildings. Self-contained community.
+Dubai Silicon Oasis,Dubai,2BR,62000,88000,75000,65,7.6,,,No,Souq Extra,Families,Quiet residential feel. Parks and schools nearby.
+International City,Dubai,Studio,18000,28000,23000,45,9.2,,,No,Dragon Mart,Ultra-budget renters,Cheapest in Dubai. Themed clusters. Far from centre.
+International City,Dubai,1BR,25000,40000,32000,42,9.0,,,No,Dragon Mart,Budget families,Long commute to most workplaces. Good for Dragon Mart workers.
+Sports City,Dubai,Studio,28000,42000,35000,75,8.0,,,No,Dubai Sports City,Active lifestyle,Cricket stadium, golf. Good for sports enthusiasts.
+Sports City,Dubai,1BR,42000,65000,53000,70,7.7,,,No,Dubai Sports City,Young professionals,Affordable. Growing community. No metro yet.
+Sports City,Dubai,2BR,62000,92000,77000,67,7.4,,,No,Dubai Sports City,Families,Spacious. Quieter than central Dubai.
+Al Barsha,Dubai,Studio,35000,55000,45000,90,7.5,,,No,Mall of the Emirates,Professionals / families,Near MOE. Good schools (GEMS). No metro but buses.
+Al Barsha,Dubai,1BR,55000,85000,70000,85,7.2,,,No,Mall of the Emirates,Families,Very popular family area. Established community.
+Al Barsha,Dubai,2BR,80000,130000,105000,82,7.0,,,No,Mall of the Emirates,Families,Villas also available. Green and spacious.
+Mirdif,Dubai,Studio,28000,42000,35000,70,7.8,,,No,Mirdiff City Centre,Families,Quiet suburb near airport. Very family-friendly.
+Mirdif,Dubai,1BR,42000,65000,53000,65,7.5,,,No,Mirdiff City Centre,Families,Mostly villas and townhouses. Low-rise apartments.
+Mirdif,Dubai,2BR,62000,92000,77000,62,7.2,,,No,Mirdiff City Centre,Families,Large family community. Good international schools.
+Jumeirah,Dubai,Villa 3BR,200000,350000,275000,,,200000,350000,No,Mercato Mall,Affluent families,Prestigious villa area. Beach access. Top schools.
+Jumeirah,Dubai,Villa 4BR,300000,500000,400000,,,300000,500000,No,Mercato Mall,Affluent families,Expatriate favourite. Large plots. Private pools.
+Emirates Hills,Dubai,Villa 4BR,400000,700000,550000,,,400000,700000,No,Dubai Marina Mall,Ultra high net worth,Gated community. Golf course views. Very exclusive.
+Palm Jumeirah,Dubai,1BR,130000,200000,165000,210,4.8,,,Yes,Nakheel Mall,Luxury seekers,Iconic island. Monorail access. Premium lifestyle.
+Palm Jumeirah,Dubai,2BR,200000,350000,275000,200,4.5,,,Yes,Nakheel Mall,Families / executives,Sea views from most units. High service charges.
+Palm Jumeirah,Dubai,Villa 4BR,500000,1200000,800000,,,500000,1200000,Yes,Nakheel Mall,Ultra luxury,Frond villas. Private beach. World-class amenities.
+DIFC,Dubai,Studio,80000,110000,95000,200,5.5,,,Yes,Gate Village,Finance professionals,Financial hub. Walking distance to courts and offices.
+DIFC,Dubai,1BR,120000,180000,150000,195,5.2,,,Yes,Gate Village,Professionals / couples,Premium serviced apartments. Top restaurants nearby.

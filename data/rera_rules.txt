@@ -1,0 +1,133 @@
+DUBAI REAL ESTATE REGULATORY AUTHORITY (RERA) — TENANT & LANDLORD RULES
+Source: Dubai Law No. 26 of 2007, Decree No. 43 of 2013, and RERA guidelines
+Last updated reference: 2024
+
+========================================
+SECTION 1 — RENT INCREASE RULES
+========================================
+
+Rent increases in Dubai are governed by Decree No. 43 of 2013 and are tied to the RERA Rental Index.
+
+RERA Rent Increase Calculator — Maximum Allowable Increases:
+- If current rent is LESS THAN 10% below market rate: NO increase allowed
+- If current rent is 11% to 20% below market rate: Maximum increase of 5%
+- If current rent is 21% to 30% below market rate: Maximum increase of 10%
+- If current rent is 31% to 40% below market rate: Maximum increase of 15%
+- If current rent is MORE THAN 40% below market rate: Maximum increase of 20%
+
+Important: The RERA Rental Index is the official reference for market rate. Landlords must use the RERA Smart Rental Index to justify any increase.
+
+Notice requirement for rent increase: The landlord must give the tenant a minimum of 90 days written notice before the rent increase takes effect. Notice must be sent via registered mail or notary public.
+
+Tenant right: If the landlord does not give 90 days notice, the tenant can legally reject the increase for that renewal period.
+
+========================================
+SECTION 2 — TENANCY CONTRACT AND EJARI
+========================================
+
+All tenancy contracts in Dubai must be registered on the Ejari system (Arabic: "my rent").
+
+Ejari registration:
+- Mandatory for all rental contracts in Dubai
+- Registration fee: AED 220 (as of 2024)
+- Both landlord and tenant can register
+- Required to connect DEWA (electricity and water), apply for UAE visa, and renew trade licences
+
+Tenancy contract minimum term: No minimum — can be monthly, 6 months, or annual.
+Most common: 1-year contracts.
+
+Contract renewal: Contracts auto-renew under the same terms unless either party gives 90 days notice of non-renewal or change.
+
+========================================
+SECTION 3 — SECURITY DEPOSIT
+========================================
+
+Standard security deposit: 5% of annual rent for unfurnished properties.
+Furnished properties: Up to 10% of annual rent.
+
+The deposit must be returned within 30 days of the tenancy end date, provided:
+- No damage beyond normal wear and tear
+- All utility bills are settled
+- Keys are returned
+
+Landlord deductions from deposit are only allowed for: property damage beyond normal wear and tear, unpaid rent or utility bills, cleaning if property returned in poor condition.
+
+Normal wear and tear (NOT deductible): minor scuffs on walls, worn carpet from regular use, faded paint, minor scratches on flooring.
+
+========================================
+SECTION 4 — CHEQUE PAYMENTS
+========================================
+
+Number of cheques: There is no law specifying the maximum number of cheques a landlord can request. However, market practice is:
+- 1 cheque (full year upfront): common for budget properties, gives tenant leverage to negotiate lower rent
+- 2 to 4 cheques: most common market standard
+- 6 to 12 cheques: monthly payments, landlord may charge a premium of 5-10% for this flexibility
+
+Landlord cannot legally force you to pay in fewer cheques than what is agreed in the signed contract.
+
+Post-dated cheques: Standard practice in Dubai. Tenant gives the landlord post-dated cheques at contract signing.
+
+Bounced cheque: A criminal offence in Dubai. The landlord can file a police case. Tenant should immediately notify landlord and replace the cheque.
+
+========================================
+SECTION 5 — EVICTION RULES
+========================================
+
+A landlord can only evict a tenant in these specific cases:
+
+1. Non-payment of rent: Landlord must give 30 days written notice to pay. If unpaid, can apply to Rental Dispute Settlement Centre (RDSC).
+
+2. Property use violation: Tenant using property for illegal purposes or against contract terms.
+
+3. Subletting without permission: Tenant sublets without landlord written consent.
+
+4. Major renovations: Landlord requires full property for major structural renovation (must prove to RDSC).
+
+5. Personal use: Landlord wants to use the property for personal use or immediate family. Must give tenant 12 months notice via notary public. Landlord cannot re-rent the property for 2 years after eviction for personal use.
+
+6. Property sale: Landlord selling the property. Must give tenant 12 months notice via notary public.
+
+Tenant protection: If landlord gives improper eviction notice, tenant can challenge it at the RDSC.
+
+========================================
+SECTION 6 — MAINTENANCE AND REPAIRS
+========================================
+
+Landlord responsibilities:
+- Major structural repairs (roof, walls, plumbing systems, electrical systems)
+- Air conditioning systems (major repairs and replacements)
+- Elevator maintenance in the building
+- Common area maintenance
+
+Tenant responsibilities:
+- Minor repairs up to AED 500 (general market practice)
+- Day-to-day maintenance items (light bulbs, tap washers, minor fixtures)
+- Keeping property clean and in good condition
+- Reporting major issues to landlord promptly
+
+If landlord refuses to repair: Tenant can report to Dubai Municipality or file at RDSC.
+
+========================================
+SECTION 7 — RENTAL DISPUTE SETTLEMENT
+========================================
+
+Rental Dispute Settlement Centre (RDSC):
+- Part of Dubai Land Department (DLD)
+- Handles all disputes between landlords and tenants
+- Filing fee: 3.5% of annual rent (minimum AED 500, maximum AED 20,000)
+- Most cases resolved within 30 to 60 days
+- Located in Deira, Dubai. Also accessible online via Dubai REST app.
+
+Common disputes handled: eviction cases, deposit refund disputes, rent increase disagreements, maintenance disputes, contract violations.
+
+========================================
+SECTION 8 — USEFUL CONTACTS
+========================================
+
+Dubai Land Department (DLD): 800-4488
+RERA: Part of DLD, same number
+Ejari registration: eservices.dubailand.gov.ae
+RERA Rental Index: dubailand.gov.ae (Smart Rental Index tool)
+DEWA (electricity and water): 04-601-9999
+Dubai REST app: Available on iOS and Android for all DLD services
+
