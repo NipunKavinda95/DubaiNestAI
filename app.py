@@ -1,125 +1,104 @@
-"""
-DubaiNest AI — Backend API
-Deployed on HuggingFace Spaces (Docker SDK)
-
-This file is the entry point for the HuggingFace Space.
-It loads the knowledge base, builds the LangChain RAG pipeline,
-and serves it via Flask on port 7860 (HuggingFace default port).
-"""
-
 import os
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
-
-
-# ── LangChain imports ─────────────────────────────────────────────
-from langchain_community.document_loaders import CSVLoader, TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_chroma import Chroma
-from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-
 from dotenv import load_dotenv
-load_dotenv()  
+
+load_dotenv()
+
+# ── OpenAI API Key ────────────────────────────────────────────────
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+
+# ── LlamaIndex imports ────────────────────────────────────────────
+from llama_index.core import (
+    SimpleDirectoryReader,
+    VectorStoreIndex,
+    Settings,
+    PromptTemplate,
+)
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
 
 # ── Flask app ─────────────────────────────────────────────────────
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# ── Load OpenAI API key ───────────────────────────────────────────
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
 # ── Build RAG pipeline on startup ────────────────────────────────
-print("🔧 Building RAG pipeline...")
+print("🔧 Building RAG pipeline (LlamaIndex)...")
 
-# 1. Load documents
-DATA_FOLDER = "./data"
-
-loaders = [
-    CSVLoader(file_path=os.path.join(DATA_FOLDER, "area_guide.csv"), encoding="utf-8"),
-    TextLoader(os.path.join(DATA_FOLDER, "rera_rules.txt"), encoding="utf-8"),
-    TextLoader(os.path.join(DATA_FOLDER, "cost_logic.txt"), encoding="utf-8"),
-]
-
-raw_docs = []
-for loader in loaders:
-    raw_docs.extend(loader.load())
-
-print(f"✅ Loaded {len(raw_docs)} documents")
-
-# 2. Split into chunks
-splitter = RecursiveCharacterTextSplitter(
-    chunk_size=500,
-    chunk_overlap=50,
-    separators=["===", "\n\n", "\n", " ", ""]
-)
-chunks = splitter.split_documents(raw_docs)
-print(f"✅ Split into {len(chunks)} chunks")
-
-# 3. Embed and store in Chroma
-embeddings = OpenAIEmbeddings(
-    model="text-embedding-3-small",
-    openai_api_key=OPENAI_API_KEY
-)
-vectorstore = Chroma.from_documents(
-    documents=chunks,
-    embedding=embeddings,
-    collection_name="dubainest"
-)
-retriever = vectorstore.as_retriever(
-    search_type="similarity",
-    search_kwargs={"k": 4}
-)
-print("✅ VectorStore ready")
-
-# 4. Build LCEL RAG chain
-llm = ChatOpenAI(
+# ── Step 1: Configure LlamaIndex global settings ──────────────────
+# LlamaIndex uses Settings instead of passing to each component
+Settings.llm = OpenAI(
     model="gpt-4o-mini",
     temperature=0,
     max_tokens=800,
-    openai_api_key=OPENAI_API_KEY
+    api_key=OPENAI_API_KEY
 )
+Settings.embed_model = OpenAIEmbedding(
+    model="text-embedding-3-small",
+    api_key=OPENAI_API_KEY
+)
+Settings.transformations = [
+    SentenceSplitter(
+        chunk_size=500,    # max characters per chunk
+        chunk_overlap=50   # overlap to preserve context at boundaries
+    )
+]
 
-PROMPT_TEMPLATE = """
+# ── Step 2: Load documents from data/ folder ─────────────────────
+# SimpleDirectoryReader reads ALL files in the folder automatically
+# Supports CSV, TXT, PDF, and more — no need for separate loaders
+DATA_FOLDER = "./data"
+
+documents = SimpleDirectoryReader(
+    input_dir=DATA_FOLDER,
+    required_exts=[".csv", ".txt"],   # only load these file types
+    recursive=False
+).load_data()
+
+print(f"✅ Loaded {len(documents)} documents")
+
+# ── Step 3: Build VectorStoreIndex ───────────────────────────────
+# VectorStoreIndex handles chunking + embedding + storing in one call
+# Today: SimpleVectorStore (in-memory)
+# Tomorrow: swap to Pinecone by changing storage_context here only
+index = VectorStoreIndex.from_documents(
+    documents,
+    show_progress=True
+)
+print("✅ VectorStore ready")
+
+# ── Step 4: Build Query Engine with custom prompt ─────────────────
+# Query engine = retriever + prompt + LLM combined
+PROMPT_TEMPLATE = """\
 You are DubaiNest AI, a helpful Dubai real estate assistant.
 You help users with rental prices, RERA tenant laws, move-in cost
 calculations, and area comparisons in Dubai.
 
 Rules:
 - Answer ONLY using the CONTEXT provided below. Do not use outside knowledge.
-- If the answer is not in the context, say: "I don't have that in my
-  knowledge base. Please check dubailand.gov.ae or a licensed agent."
-- Always quote prices in AED also some ask for any other currencies please convert AED values to that currency.
+- If the answer is not in the context, say: "I don't have that in my \
+knowledge base. Please check dubailand.gov.ae or a licensed agent."
+- Always quote prices in AED. If user asks for another currency, convert AED values.
 - Be concise. Use bullet points for comparisons and lists.
 - Never give legal advice. For legal matters refer users to RDSC.
 
 CONTEXT:
-{context}
+{context_str}
 
 USER QUESTION:
-{question}
+{query_str}
 
 Answer based only on the context above.
 """
 
-prompt = PromptTemplate(
-    template=PROMPT_TEMPLATE,
-    input_variables=["context", "question"]
-)
+# LlamaIndex uses {context_str} and {query_str} — different from LangChain
+qa_prompt = PromptTemplate(PROMPT_TEMPLATE)
 
-def format_docs(docs):
-    return "\n\n---\n\n".join(doc.page_content for doc in docs)
-
-rag_chain = (
-    {
-        "context":  retriever | format_docs,
-        "question": RunnablePassthrough()
-    }
-    | prompt
-    | llm
-    | StrOutputParser()
+query_engine = index.as_query_engine(
+    similarity_top_k=4,          # retrieve top 4 chunks
+    text_qa_template=qa_prompt,  # apply custom prompt
+    streaming=False
 )
 
 print("✅ RAG chain ready!")
@@ -136,26 +115,29 @@ def chat():
     if not question:
         return jsonify({"error": "Question cannot be empty"}), 400
     try:
-        answer = rag_chain.invoke(question)
-        return jsonify({"answer": answer, "question": question})
+        # LlamaIndex uses .query() instead of .invoke()
+        response = query_engine.query(question)
+        return jsonify({
+            "answer": str(response),   # convert response object to string
+            "question": question
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "bot": "DubaiNest AI"})
+    return jsonify({"status": "ok", "bot": "DubaiNest AI (LlamaIndex)"})
 
 
 @app.route("/", methods=["GET"])
-def index():
+def index_route():
     html = open("static/index.html", encoding="utf-8").read()
     html = html.replace("__API_BASE_URL__", "")
     return render_template_string(html)
 
 
 # ── Start server ──────────────────────────────────────────────────
-# HuggingFace Spaces requires port 7860
 if __name__ == "__main__":
-   from waitress import serve
-   serve(app, host="0.0.0.0", port=7860)
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=7860)

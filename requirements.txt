@@ -1,5 +1,6 @@
 flask
 flask-cors
+python-dotenv
 langchain
 langchain-core
 langchain-openai
@@ -12,3 +13,8 @@ tiktoken
 unstructured
 pandas
 waitress
+llama-index-core
+llama-index-embeddings-openai
+llama-index-llms-openai
+llama-index-vector-stores-pinecone
+pinecone-client
