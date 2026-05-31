@@ -7,6 +7,7 @@ load_dotenv()
 
 # ── OpenAI API Key ────────────────────────────────────────────────
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")  
 
 # ── LlamaIndex imports ────────────────────────────────────────────
 from llama_index.core import (
@@ -18,6 +19,9 @@ from llama_index.core import (
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from pinecone import Pinecone, ServerlessSpec
+from llama_index.vector_stores.pinecone import PineconeVectorStore
+from llama_index.core import StorageContext
 
 # ── Flask app ─────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -58,15 +62,30 @@ documents = SimpleDirectoryReader(
 
 print(f"✅ Loaded {len(documents)} documents")
 
-# ── Step 3: Build VectorStoreIndex ───────────────────────────────
-# VectorStoreIndex handles chunking + embedding + storing in one call
-# Today: SimpleVectorStore (in-memory)
-# Tomorrow: swap to Pinecone by changing storage_context here only
+# ── Step 3: Build VectorStoreIndex with Pinecone ─────────────────
+pc = Pinecone(api_key=PINECONE_API_KEY)
+index_name = "dubainest-ai"
+
+# Create index if it doesn't exist
+existing_indexes = [idx["name"] for idx in pc.list_indexes()]
+if index_name not in existing_indexes:
+    pc.create_index(
+        name=index_name,
+        dimension=1536,
+        metric="cosine",
+        spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+    )
+
+pinecone_index = pc.Index(index_name)
+vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
 index = VectorStoreIndex.from_documents(
     documents,
+    storage_context=storage_context,
     show_progress=True
 )
-print("✅ VectorStore ready")
+print("✅ Pinecone VectorStore ready")
 
 # ── Step 4: Build Query Engine with custom prompt ─────────────────
 # Query engine = retriever + prompt + LLM combined
