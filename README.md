@@ -4,7 +4,9 @@ emoji: 🏙️
 colorFrom: yellow
 colorTo: blue
 sdk: docker
-pinned: false
+pinned: true
+license: mit
+short_description: Dubai Real Estate Assistant
 ---
 
 # 🏙️ DubaiNest AI — Dubai Real Estate Assistant
