@@ -19,6 +19,7 @@
     --user-bg: rgba(201,168,76,0.12);
     --bot-bg: rgba(255,255,255,0.04);
     --radius: 16px;
+    --green: #4CAF50;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,7 +35,6 @@
     overflow: hidden;
   }
 
-  /* ── Background texture ── */
   body::before {
     content: '';
     position: fixed;
@@ -48,22 +48,15 @@
 
   /* ── Header ── */
   header {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 18px 28px;
     background: rgba(10,10,15,0.9);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(12px);
   }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .logo { display: flex; align-items: center; gap: 12px; }
 
   .logo-icon {
     width: 38px; height: 38px;
@@ -76,206 +69,290 @@
 
   .logo-text h1 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    color: var(--text);
-    line-height: 1;
+    font-size: 20px; font-weight: 600;
+    letter-spacing: 0.03em; color: var(--text); line-height: 1;
   }
 
   .logo-text span {
-    font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-weight: 400;
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400;
   }
 
-  /* API URL bar */
-  .api-bar {
-    display: flex;
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  /* Session memory banner */
+  #memory-banner {
+    display: none;
     align-items: center;
     gap: 8px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 7px 12px;
-  }
-
-  .api-bar label {
+    border-radius: 8px;
+    padding: 6px 12px;
     font-size: 11px;
+    color: var(--text-dim);
+    max-width: 360px;
+    flex-wrap: wrap;
+  }
+
+  #memory-banner.visible { display: flex; }
+
+  .memory-label {
     color: var(--gold);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    white-space: nowrap;
+    font-size: 10px;
+    flex-shrink: 0;
   }
 
-  .api-bar input {
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    width: 260px;
+  .memory-tag {
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    color: var(--gold-light);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 11px;
   }
 
-  .api-bar input::placeholder { color: var(--text-dim); }
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
 
   .status-dot {
     width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #444;
-    transition: background 0.3s;
-    flex-shrink: 0;
+    border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 6px var(--green);
   }
-  .status-dot.live { background: #4CAF50; box-shadow: 0 0 6px #4CAF50; }
 
   /* ── Chat area ── */
   #chat {
-    position: relative;
-    z-index: 1;
-    flex: 1;
-    overflow-y: auto;
+    position: relative; z-index: 1;
+    flex: 1; overflow-y: auto;
     padding: 28px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    scroll-behavior: smooth;
+    display: flex; flex-direction: column;
+    gap: 0; scroll-behavior: smooth;
   }
 
   #chat::-webkit-scrollbar { width: 4px; }
   #chat::-webkit-scrollbar-track { background: transparent; }
   #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-  /* ── Welcome screen ── */
+  /* ── Welcome ── */
   #welcome {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    padding: 40px 20px;
-    text-align: center;
-    animation: fadeIn 0.6s ease;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex: 1; padding: 40px 20px;
+    text-align: center; animation: fadeIn 0.6s ease;
   }
 
   .welcome-icon {
     width: 72px; height: 72px;
     background: linear-gradient(135deg, var(--gold-dim), rgba(201,168,76,0.25));
-    border: 1px solid var(--border);
-    border-radius: 20px;
+    border: 1px solid var(--border); border-radius: 20px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 32px;
-    margin-bottom: 20px;
+    font-size: 32px; margin-bottom: 20px;
     box-shadow: 0 8px 32px rgba(201,168,76,0.1);
   }
 
   #welcome h2 {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 30px;
-    font-weight: 400;
-    margin-bottom: 10px;
-    color: var(--text);
+    font-size: 30px; font-weight: 400;
+    margin-bottom: 10px; color: var(--text);
   }
 
   #welcome p {
-    color: var(--text-dim);
-    font-size: 14px;
-    max-width: 400px;
-    line-height: 1.7;
-    margin-bottom: 32px;
+    color: var(--text-dim); font-size: 14px;
+    max-width: 400px; line-height: 1.7; margin-bottom: 32px;
   }
 
-  /* Suggestion chips */
   .suggestions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    max-width: 600px;
+    display: flex; flex-wrap: wrap;
+    gap: 10px; justify-content: center; max-width: 600px;
   }
 
   .chip {
     padding: 9px 16px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 100px;
-    font-size: 13px;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
+    border-radius: 100px; font-size: 13px;
+    color: var(--text-dim); cursor: pointer;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
   }
 
   .chip:hover {
     background: var(--gold-dim);
-    border-color: var(--gold);
-    color: var(--gold-light);
+    border-color: var(--gold); color: var(--gold-light);
   }
 
   /* ── Messages ── */
   .msg-row {
-    display: flex;
-    padding: 6px 28px;
+    display: flex; padding: 6px 28px;
     animation: slideUp 0.25s ease;
   }
 
   .msg-row.user { justify-content: flex-end; }
-  .msg-row.bot  { justify-content: flex-start; }
+  .msg-row.bot  { justify-content: flex-start; flex-direction: column; }
 
   .bubble {
-    max-width: 68%;
-    padding: 14px 18px;
-    border-radius: var(--radius);
-    font-size: 14px;
-    line-height: 1.7;
+    max-width: 68%; padding: 14px 18px;
+    border-radius: var(--radius); font-size: 14px; line-height: 1.7;
   }
 
   .msg-row.user .bubble {
     background: var(--user-bg);
     border: 1px solid rgba(201,168,76,0.25);
-    border-bottom-right-radius: 4px;
-    color: var(--text);
+    border-bottom-right-radius: 4px; color: var(--text);
   }
 
   .msg-row.bot .bubble {
     background: var(--bot-bg);
     border: 1px solid rgba(255,255,255,0.07);
-    border-bottom-left-radius: 4px;
-    color: var(--text);
+    border-bottom-left-radius: 4px; color: var(--text);
   }
 
   .bot-name {
-    font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    font-weight: 500;
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* ── Agent question bubble (styled differently) ── */
+  .msg-row.agent .bubble {
+    background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.04));
+    border: 1px solid rgba(201,168,76,0.3);
+    border-bottom-left-radius: 4px; color: var(--text);
+  }
+
+  /* ── Shortlist cards ── */
+  .shortlist-wrap {
+    padding: 6px 28px;
+    animation: slideUp 0.3s ease;
+  }
+
+  .shortlist-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .shortlist-header .bot-name { margin-bottom: 0; }
+
+  .shortlist-summary {
+    font-size: 13px; color: var(--text-dim);
+    margin-bottom: 16px; max-width: 600px; line-height: 1.6;
+  }
+
+  .shortlist-cards {
+    display: flex; flex-direction: column; gap: 12px;
+    max-width: 700px;
+  }
+
+  .area-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .area-card:hover { border-color: var(--gold); }
+
+  .area-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--gold), var(--gold-light));
+  }
+
+  .card-rank {
+    position: absolute; top: 16px; right: 16px;
+    width: 28px; height: 28px;
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; color: var(--gold);
+  }
+
+  .card-area {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600; color: var(--text);
+    margin-bottom: 6px; padding-right: 36px;
+  }
+
+  .card-vibe {
+    font-size: 13px; color: var(--text-dim);
+    margin-bottom: 12px; line-height: 1.5;
+  }
+
+  .card-stats {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; color: var(--text-dim);
+  }
+
+  .stat-pill strong { color: var(--text); font-weight: 500; }
+
+  .card-reason {
+    font-size: 12px; color: var(--gold);
+    border-top: 1px solid var(--border); padding-top: 10px;
+    margin-top: 2px; line-height: 1.5;
+  }
+
+  .card-best-for {
+    font-size: 12px; color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── Follow-up chips (dynamic) ── */
+  .followup-row {
+    padding: 4px 28px 8px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    animation: fadeIn 0.3s ease 0.2s both;
+  }
+
+  .followup-chip {
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px; font-size: 12px;
+    color: var(--text-dim); cursor: pointer;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+
+  .followup-chip:hover {
+    background: var(--gold-dim);
+    border-color: var(--gold); color: var(--gold-light);
   }
 
   /* Typing indicator */
   .typing-bubble {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-    padding: 16px 20px;
+    display: flex; gap: 5px;
+    align-items: center; padding: 16px 20px;
   }
 
   .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--gold);
-    animation: bounce 1.2s infinite;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold); animation: bounce 1.2s infinite;
   }
+
   .dot:nth-child(2) { animation-delay: 0.2s; }
   .dot:nth-child(3) { animation-delay: 0.4s; }
 
   /* ── Input area ── */
   footer {
-    position: relative;
-    z-index: 10;
+    position: relative; z-index: 10;
     padding: 16px 28px 20px;
     background: rgba(10,10,15,0.95);
     border-top: 1px solid var(--border);
@@ -283,63 +360,45 @@
   }
 
   .input-wrap {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
+    display: flex; align-items: flex-end; gap: 10px;
     background: var(--surface2);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 10px 10px 10px 18px;
+    border-radius: 14px; padding: 10px 10px 10px 18px;
     transition: border-color 0.2s;
   }
 
   .input-wrap:focus-within { border-color: var(--gold); }
 
   #input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 300;
-    resize: none;
-    max-height: 120px;
-    min-height: 22px;
-    line-height: 1.5;
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 300;
+    resize: none; max-height: 120px; min-height: 22px; line-height: 1.5;
   }
 
   #input::placeholder { color: var(--text-dim); }
 
   #send {
-    width: 38px; height: 38px;
-    border-radius: 10px;
+    width: 38px; height: 38px; border-radius: 10px;
     background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    border: none;
-    cursor: pointer;
+    border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: opacity 0.2s, transform 0.15s;
+    flex-shrink: 0; transition: opacity 0.2s, transform 0.15s;
   }
 
   #send:hover { opacity: 0.85; transform: scale(1.05); }
   #send:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-
   #send svg { width: 16px; height: 16px; fill: #0A0A0F; }
 
   .footer-note {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-top: 10px;
-    letter-spacing: 0.04em;
+    text-align: center; font-size: 11px;
+    color: var(--text-dim); margin-top: 10px; letter-spacing: 0.04em;
   }
 
   /* ── Animations ── */
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+  @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideUp  { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
+  @keyframes bounce   { 0%,60%,100% { transform:translateY(0);} 30% { transform:translateY(-6px);} }
 </style>
 </head>
 <body>
@@ -350,11 +409,21 @@
     <div class="logo-icon">🏙️</div>
     <div class="logo-text">
       <h1>DubaiNest AI</h1>
-      <span>Real Estate Assistant</span>
+      <span>Real Estate Assistant · v2</span>
     </div>
   </div>
 
-  
+  <div class="header-right">
+    <!-- Session memory banner -->
+    <div id="memory-banner">
+      <span class="memory-label">Session</span>
+      <span id="memory-tags"></span>
+    </div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Live
+    </div>
+  </div>
 </header>
 
 <!-- ── Chat ── -->
@@ -362,14 +431,14 @@
   <div id="welcome">
     <div class="welcome-icon">🏙️</div>
     <h2>Ask me anything about Dubai real estate</h2>
-    <p>Rental prices, area comparisons, RERA tenant rights, move-in costs — I have you covered. Paste your ngrok URL above to get started.</p>
+    <p>Rental prices, area comparisons, RERA tenant rights, move-in costs — or let me build you a personalised area shortlist.</p>
     <div class="suggestions">
+      <div class="chip" onclick="sendChip(this)">Find me the best area to live</div>
       <div class="chip" onclick="sendChip(this)">Average rent for 1BR in JVC?</div>
       <div class="chip" onclick="sendChip(this)">Can my landlord raise rent by 20%?</div>
       <div class="chip" onclick="sendChip(this)">Move-in cost for AED 90,000 flat?</div>
       <div class="chip" onclick="sendChip(this)">Best areas with metro access?</div>
       <div class="chip" onclick="sendChip(this)">Compare JVC vs Dubai Marina</div>
-      <div class="chip" onclick="sendChip(this)">Which area suits a young professional?</div>
     </div>
   </div>
 </div>
@@ -377,14 +446,12 @@
 <!-- ── Input ── -->
 <footer>
   <div class="input-wrap">
-    <textarea id="input" rows="1" placeholder="Ask about Dubai rentals, areas, or RERA rules…"></textarea>
+    <textarea id="input" rows="1" placeholder="Ask about rentals, areas, RERA rules, or say 'find me an area'…"></textarea>
     <button id="send" onclick="sendMessage()" title="Send">
-      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
-      </svg>
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
     </button>
   </div>
-  <div class="footer-note">Nipun Kavinda · Nexora Studio · DubaiNest AI</div>
+  <div class="footer-note">Nipun Kavinda · Nexora Studio · DubaiNest AI v2</div>
 </footer>
 
 <script>
@@ -392,7 +459,13 @@
   const welcome = document.getElementById('welcome');
   const input   = document.getElementById('input');
   const sendBtn = document.getElementById('send');
-  const API_BASE = '';  // same-origin — served by Flask
+  const API_BASE = '';
+
+  // Agent state — persisted in JS
+  let agentState = { mode: 'normal' };
+
+  // Session memory — topics explored this session
+  let sessionMemory = [];
 
   // ── Auto-resize textarea ──────────────────────────────────────
   input.addEventListener('input', () => {
@@ -400,7 +473,6 @@
     input.style.height = Math.min(input.scrollHeight, 120) + 'px';
   });
 
-  // ── Send on Enter (Shift+Enter = new line) ────────────────────
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -408,33 +480,62 @@
     }
   });
 
-  
+  // ── Session memory banner ─────────────────────────────────────
+  function addMemory(tag) {
+    if (sessionMemory.includes(tag)) return;
+    sessionMemory.push(tag);
+    const banner = document.getElementById('memory-banner');
+    const tagsEl = document.getElementById('memory-tags');
+    tagsEl.innerHTML = sessionMemory.map(t =>
+      `<span class="memory-tag">${t}</span>`
+    ).join('');
+    banner.classList.add('visible');
+  }
 
-  // ── Append a message bubble ───────────────────────────────────
-  function appendMsg(role, text) {
+  function extractMemoryTags(question) {
+    const q = question.toLowerCase();
+    if (q.includes('jvc') || q.includes('jumeirah village')) addMemory('JVC');
+    if (q.includes('marina') || q.includes('dubai marina')) addMemory('Marina');
+    if (q.includes('downtown')) addMemory('Downtown');
+    if (q.includes('deira')) addMemory('Deira');
+    if (q.includes('bur dubai')) addMemory('Bur Dubai');
+    if (q.includes('jlt') || q.includes('jumeirah lake')) addMemory('JLT');
+    if (q.includes('business bay')) addMemory('Business Bay');
+    if (q.includes('rera') || q.includes('rent increase')) addMemory('RERA');
+    if (q.includes('move-in') || q.includes('deposit')) addMemory('Move-in costs');
+    if (q.includes('metro')) addMemory('Metro areas');
+  }
+
+  // ── Render helpers ────────────────────────────────────────────
+  function removeWelcome() {
     if (welcome.parentNode === chat) chat.removeChild(welcome);
+  }
 
-    const row = document.createElement('div');
-    row.className = `msg-row ${role}`;
-
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-
-    if (role === 'bot') {
-      const name = document.createElement('div');
-      name.className = 'bot-name';
-      name.textContent = 'DubaiNest AI';
-      bubble.appendChild(name);
-    }
-
-    const content = document.createElement('div');
-    // Render simple markdown: **bold**, bullet points
-    content.innerHTML = text
+  function renderMarkdown(text) {
+    return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/^[-•]\s(.+)/gm, '<li>$1</li>')
       .replace(/(<li>.*<\/li>)/gs, '<ul style="padding-left:18px;margin-top:6px">$1</ul>')
       .replace(/\n/g, '<br>');
+  }
 
+  function appendMsg(role, text, isAgent = false) {
+    removeWelcome();
+    const row = document.createElement('div');
+    row.className = `msg-row ${isAgent ? 'agent' : role}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    if (role === 'bot' || isAgent) {
+      const name = document.createElement('div');
+      name.className = 'bot-name';
+      name.textContent = isAgent ? '🤖 DubaiNest Agent' : 'DubaiNest AI';
+      bubble.appendChild(name);
+    }
+
+    const content = document.createElement('div');
+    content.innerHTML = renderMarkdown(text);
     bubble.appendChild(content);
     row.appendChild(bubble);
     chat.appendChild(row);
@@ -442,9 +543,70 @@
     return row;
   }
 
-  // ── Show typing indicator ─────────────────────────────────────
+  function appendFollowups(chips) {
+    if (!chips || chips.length === 0) return;
+    const row = document.createElement('div');
+    row.className = 'followup-row';
+    chips.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'followup-chip';
+      chip.textContent = c;
+      chip.onclick = () => { input.value = c; sendMessage(); };
+      row.appendChild(chip);
+    });
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── Shortlist cards renderer ──────────────────────────────────
+  function renderShortlist(data) {
+    removeWelcome();
+    const wrap = document.createElement('div');
+    wrap.className = 'shortlist-wrap';
+
+    const header = document.createElement('div');
+    header.className = 'shortlist-header';
+    header.innerHTML = `<div class="bot-name">🏆 DubaiNest Agent · Your Shortlist</div>`;
+    wrap.appendChild(header);
+
+    if (data.summary) {
+      const summary = document.createElement('div');
+      summary.className = 'shortlist-summary';
+      summary.textContent = data.summary;
+      wrap.appendChild(summary);
+    }
+
+    const cards = document.createElement('div');
+    cards.className = 'shortlist-cards';
+
+    (data.shortlist || []).forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'area-card';
+      card.innerHTML = `
+        <div class="card-rank">${item.rank}</div>
+        <div class="card-area">${item.area}</div>
+        <div class="card-vibe">${item.vibe || ''}</div>
+        <div class="card-stats">
+          ${item.avg_rent_1br ? `<div class="stat-pill">1BR <strong>${item.avg_rent_1br}</strong></div>` : ''}
+          ${item.avg_rent_2br ? `<div class="stat-pill">2BR <strong>${item.avg_rent_2br}</strong></div>` : ''}
+          ${item.metro_access ? `<div class="stat-pill">Metro <strong>${item.metro_access}</strong></div>` : ''}
+        </div>
+        ${item.best_for ? `<div class="card-best-for">👥 Best for: ${item.best_for}</div>` : ''}
+        ${item.reason ? `<div class="card-reason">✦ ${item.reason}</div>` : ''}
+      `;
+      // Add to session memory
+      if (item.area) addMemory(item.area);
+      cards.appendChild(card);
+    });
+
+    wrap.appendChild(cards);
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── Typing indicator ─────────────────────────────────────────
   function showTyping() {
-    if (welcome.parentNode === chat) chat.removeChild(welcome);
+    removeWelcome();
     const row = document.createElement('div');
     row.className = 'msg-row bot';
     row.id = 'typing';
@@ -460,31 +622,29 @@
     if (t) t.remove();
   }
 
-  // ── Send chip suggestion ──────────────────────────────────────
+  // ── Chip shortcuts ────────────────────────────────────────────
   function sendChip(el) {
     input.value = el.textContent;
     sendMessage();
   }
 
-  // ── Main send function ────────────────────────────────────────
+  // ── Main send ─────────────────────────────────────────────────
   async function sendMessage() {
     const question = input.value.trim();
     if (!question) return;
 
-    const url = API_BASE;
-
-    // Show user message
     appendMsg('user', question);
+    extractMemoryTags(question);
     input.value = '';
     input.style.height = 'auto';
     sendBtn.disabled = true;
     showTyping();
 
     try {
-      const res = await fetch(`${url}/chat`, {
+      const res = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ question, agent_state: agentState })
       });
 
       const data = await res.json();
@@ -492,14 +652,26 @@
 
       if (data.error) {
         appendMsg('bot', '⚠️ ' + data.error);
+      } else if (data.type === 'agent_question') {
+        // Agent is collecting preferences
+        agentState = data.agent_state;
+        appendMsg('bot', data.message, true);
+      } else if (data.type === 'shortlist') {
+        // Render shortlist cards
+        agentState = data.agent_state || { mode: 'normal' };
+        renderShortlist(data);
+        appendFollowups(data.followups);
       } else {
+        // Standard answer
+        agentState = data.agent_state || { mode: 'normal' };
         appendMsg('bot', data.answer);
+        appendFollowups(data.followups);
       }
 
     } catch (err) {
       removeTyping();
-      appendMsg('bot', '❌ Could not reach the backend. Please refresh and try again.');
-      }
+      appendMsg('bot', '❌ Could not reach the backend. Please try again.');
+    }
 
     sendBtn.disabled = false;
     input.focus();
