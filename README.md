@@ -1,13 +1,17 @@
 ---
 title: DubaiNest AI
-emoji: 🏙️
+emoji: 🌇
 colorFrom: yellow
 colorTo: blue
 sdk: docker
-pinned: false
+pinned: true
+license: mit
+short_description: Dubai Real Estate Assistant
+thumbnail: >-
+  https://cdn-uploads.huggingface.co/production/uploads/681ecc9f68e6f14b1e7d43b0/NxTSoa93VtJBp5NvJUb_I.png
 ---
 
-# 🏙️ DubaiNest AI — Dubai Real Estate Assistant
+# 🌇 DubaiNest AI — Dubai Real Estate Assistant
 
 > An end-to-end RAG-powered AI chatbot that answers questions about Dubai rental prices, area comparisons, RERA tenant rights, and move-in costs — built as part of the AI Accelerator Bootcamp by Decoding Data Science.
 
