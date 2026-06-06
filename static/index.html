@@ -1035,14 +1035,14 @@
     const widget = detectWidget(question);
     if (widget === 'movein') {
       renderMoveinWidget();
-      appendFollowups(['What areas suit a budget of AED 80K?', 'What's the average rent in JVC?']);
+      appendFollowups(['What areas suit a budget of AED 80K?', 'What is the average rent in JVC?']);
       sendBtn.disabled = false;
       input.focus();
       return;
     }
     if (widget === 'rera') {
       renderReraWidget();
-      appendFollowups(['What's the average rent in Dubai Marina?', 'How do I file a RDSC complaint?']);
+      appendFollowups(['What is the average rent in Dubai Marina?', 'How do I file a RDSC complaint?']);
       sendBtn.disabled = false;
       input.focus();
       return;
