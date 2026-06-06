@@ -395,6 +395,146 @@
     color: var(--text-dim); margin-top: 10px; letter-spacing: 0.04em;
   }
 
+  /* ── Inline tool widgets ── */
+  .widget-wrap {
+    padding: 6px 28px;
+    animation: slideUp 0.3s ease;
+  }
+
+  .widget-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    max-width: 520px;
+    position: relative;
+  }
+
+  .widget-title {
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 500; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .widget-row {
+    display: flex; align-items: center;
+    gap: 10px; margin-bottom: 12px;
+  }
+
+  .widget-row label {
+    font-size: 13px; color: var(--text-dim);
+    min-width: 130px; flex-shrink: 0;
+  }
+
+  .widget-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    width: 160px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .widget-input:focus { border-color: var(--gold); }
+
+  .widget-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .widget-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none; border-radius: 8px;
+    padding: 8px 18px;
+    color: #0A0A0F;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+
+  .widget-btn:hover { opacity: 0.85; }
+
+  .widget-divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  .widget-results { display: none; }
+  .widget-results.visible { display: block; }
+
+  .result-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 10px;
+  }
+
+  .result-item {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px; padding: 10px 12px;
+  }
+
+  .result-label {
+    font-size: 11px; color: var(--text-dim);
+    margin-bottom: 3px;
+  }
+
+  .result-value {
+    font-size: 15px; font-weight: 500; color: var(--text);
+  }
+
+  .result-total {
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .result-total-label {
+    font-size: 13px; color: var(--gold);
+    letter-spacing: 0.04em;
+  }
+
+  .result-total-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 600; color: var(--gold-light);
+  }
+
+  .rera-verdict {
+    border-radius: 10px; padding: 12px 16px;
+    margin-top: 10px; font-size: 13px; line-height: 1.6;
+  }
+
+  .rera-verdict.allowed {
+    background: rgba(76,175,80,0.1);
+    border: 1px solid rgba(76,175,80,0.3);
+    color: #81C784;
+  }
+
+  .rera-verdict.capped {
+    background: rgba(255,193,7,0.1);
+    border: 1px solid rgba(255,193,7,0.25);
+    color: #FFD54F;
+  }
+
+  .rera-verdict.illegal {
+    background: rgba(244,67,54,0.1);
+    border: 1px solid rgba(244,67,54,0.25);
+    color: #EF9A9A;
+  }
+
   /* ── Animations ── */
   @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
   @keyframes slideUp  { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
@@ -435,8 +575,8 @@
     <div class="suggestions">
       <div class="chip" onclick="sendChip(this)">Find me the best area to live</div>
       <div class="chip" onclick="sendChip(this)">Average rent for 1BR in JVC?</div>
-      <div class="chip" onclick="sendChip(this)">Can my landlord raise rent by 20%?</div>
-      <div class="chip" onclick="sendChip(this)">Move-in cost for AED 90,000 flat?</div>
+      <div class="chip" onclick="sendChip(this)">Calculate move-in cost</div>
+      <div class="chip" onclick="sendChip(this)">Check rent increase RERA</div>
       <div class="chip" onclick="sendChip(this)">Best areas with metro access?</div>
       <div class="chip" onclick="sendChip(this)">Compare JVC vs Dubai Marina</div>
     </div>
@@ -454,6 +594,126 @@
   <div class="footer-note">Nipun Kavinda · Nexora Studio · DubaiNest AI v2</div>
 </footer>
 
+<!-- ── Move-in Cost Calculator Widget Template ── -->
+<template id="tmpl-movein">
+  <div class="widget-wrap">
+    <div class="widget-card">
+      <div class="widget-title">🧮 Move-in Cost Calculator</div>
+
+      <div class="widget-row">
+        <label>Annual rent (AED)</label>
+        <input class="widget-input" type="number" id="wi-rent" placeholder="e.g. 90000" min="10000" max="1000000" step="1000"/>
+      </div>
+
+      <div class="widget-row">
+        <label>Cheques</label>
+        <select class="widget-select" id="wi-cheques">
+          <option value="1">1 cheque</option>
+          <option value="2">2 cheques</option>
+          <option value="4" selected>4 cheques</option>
+          <option value="6">6 cheques</option>
+          <option value="12">12 cheques</option>
+        </select>
+      </div>
+
+      <div class="widget-row">
+        <label>Include chiller?</label>
+        <select class="widget-select" id="wi-chiller">
+          <option value="no" selected>No (DEWA only)</option>
+          <option value="yes">Yes (chiller included)</option>
+        </select>
+      </div>
+
+      <button class="widget-btn" onclick="calcMovein(this)">Calculate</button>
+
+      <hr class="widget-divider"/>
+
+      <div class="widget-results" id="wi-results">
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">Security deposit</div>
+            <div class="result-value" id="wi-deposit">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Agency fee (5%)</div>
+            <div class="result-value" id="wi-agency">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Ejari registration</div>
+            <div class="result-value">AED 220</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">DEWA deposit</div>
+            <div class="result-value" id="wi-dewa">—</div>
+          </div>
+          <div class="result-item" id="wi-chiller-row" style="display:none">
+            <div class="result-label">Chiller deposit</div>
+            <div class="result-value" id="wi-chiller-val">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">First cheque</div>
+            <div class="result-value" id="wi-firstcheque">—</div>
+          </div>
+        </div>
+        <div class="result-total">
+          <div class="result-total-label">Total move-in cost</div>
+          <div class="result-total-value" id="wi-total">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ── RERA Rent Checker Widget Template ── -->
+<template id="tmpl-rera">
+  <div class="widget-wrap">
+    <div class="widget-card">
+      <div class="widget-title">📋 RERA Rent Increase Checker</div>
+
+      <div class="widget-row">
+        <label>Current annual rent (AED)</label>
+        <input class="widget-input" type="number" id="ri-current" placeholder="e.g. 80000" min="5000" step="1000"/>
+      </div>
+
+      <div class="widget-row">
+        <label>Area average rent (AED)</label>
+        <input class="widget-input" type="number" id="ri-market" placeholder="e.g. 100000" min="5000" step="1000"/>
+      </div>
+
+      <div class="widget-row">
+        <label>Proposed new rent (AED)</label>
+        <input class="widget-input" type="number" id="ri-proposed" placeholder="e.g. 95000" min="5000" step="1000"/>
+      </div>
+
+      <button class="widget-btn" onclick="checkRera(this)">Check RERA rules</button>
+
+      <hr class="widget-divider"/>
+
+      <div class="widget-results" id="ri-results">
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">% below market avg</div>
+            <div class="result-value" id="ri-pctbelow">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Max legal increase</div>
+            <div class="result-value" id="ri-maxpct">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Max legal new rent</div>
+            <div class="result-value" id="ri-maxrent">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Proposed increase</div>
+            <div class="result-value" id="ri-propinc">—</div>
+          </div>
+        </div>
+        <div class="rera-verdict" id="ri-verdict"></div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script>
   const chat    = document.getElementById('chat');
   const welcome = document.getElementById('welcome');
@@ -466,6 +726,139 @@
 
   // Session memory — topics explored this session
   let sessionMemory = [];
+
+  // ── Widget keyword detection ──────────────────────────────────
+  const MOVEIN_KEYWORDS = ['move-in cost', 'movein cost', 'move in cost', 'moving cost',
+    'how much to move', 'deposit calculator', 'calculate deposit',
+    'upfront cost', 'move-in calculator', 'calculate move'];
+
+  const RERA_KEYWORDS = ['rera check', 'rent increase check', 'can my landlord raise',
+    'is this rent increase legal', 'rera calculator', 'legal rent increase',
+    'max rent increase', 'rent hike', 'check rent increase', 'rera rent', 'dispute rent'];
+
+  function detectWidget(q) {
+    const lower = q.toLowerCase();
+    if (MOVEIN_KEYWORDS.some(k => lower.includes(k))) return 'movein';
+    if (RERA_KEYWORDS.some(k => lower.includes(k))) return 'rera';
+    return null;
+  }
+
+  // ── Render move-in widget ─────────────────────────────────────
+  function renderMoveinWidget() {
+    removeWelcome();
+    const tmpl = document.getElementById('tmpl-movein');
+    const node = tmpl.content.cloneNode(true);
+    chat.appendChild(node);
+    chat.scrollTop = chat.scrollHeight;
+    addMemory('Move-in costs');
+  }
+
+  // ── Render RERA widget ────────────────────────────────────────
+  function renderReraWidget() {
+    removeWelcome();
+    const tmpl = document.getElementById('tmpl-rera');
+    const node = tmpl.content.cloneNode(true);
+    chat.appendChild(node);
+    chat.scrollTop = chat.scrollHeight;
+    addMemory('RERA');
+  }
+
+  // ── Move-in calculator logic ──────────────────────────────────
+  function calcMovein(btn) {
+    const wrap  = btn.closest('.widget-card');
+    const rent  = parseFloat(wrap.querySelector('#wi-rent').value);
+    const cheqs = parseInt(wrap.querySelector('#wi-cheques').value);
+    const chiller = wrap.querySelector('#wi-chiller').value === 'yes';
+
+    if (!rent || rent < 10000) {
+      wrap.querySelector('#wi-rent').style.borderColor = 'rgba(244,67,54,0.6)';
+      return;
+    }
+    wrap.querySelector('#wi-rent').style.borderColor = '';
+
+    const deposit    = rent * 0.05;
+    const agency     = rent * 0.05;
+    const ejari      = 220;
+    const dewa       = rent > 150000 ? 4000 : 2000;
+    const chillerDep = chiller ? 1500 : 0;
+    const firstCheq  = Math.round(rent / cheqs);
+    const total      = deposit + agency + ejari + dewa + chillerDep + firstCheq;
+
+    const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+
+    wrap.querySelector('#wi-deposit').textContent     = fmt(deposit);
+    wrap.querySelector('#wi-agency').textContent      = fmt(agency);
+    wrap.querySelector('#wi-dewa').textContent        = fmt(dewa);
+    wrap.querySelector('#wi-firstcheque').textContent = fmt(firstCheq);
+    wrap.querySelector('#wi-total').textContent       = fmt(total);
+
+    const chillerRow = wrap.querySelector('#wi-chiller-row');
+    if (chiller) {
+      chillerRow.style.display = 'block';
+      wrap.querySelector('#wi-chiller-val').textContent = fmt(chillerDep);
+    } else {
+      chillerRow.style.display = 'none';
+    }
+
+    wrap.querySelector('#wi-results').classList.add('visible');
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── RERA checker logic ────────────────────────────────────────
+  function reraMaxIncrease(pctBelow) {
+    if (pctBelow < 10) return 0;
+    if (pctBelow < 20) return 5;
+    if (pctBelow < 30) return 10;
+    if (pctBelow < 40) return 15;
+    return 20;
+  }
+
+  function checkRera(btn) {
+    const wrap     = btn.closest('.widget-card');
+    const current  = parseFloat(wrap.querySelector('#ri-current').value);
+    const market   = parseFloat(wrap.querySelector('#ri-market').value);
+    const proposed = parseFloat(wrap.querySelector('#ri-proposed').value);
+
+    const inputs = [wrap.querySelector('#ri-current'), wrap.querySelector('#ri-market'), wrap.querySelector('#ri-proposed')];
+    let valid = true;
+    inputs.forEach(inp => {
+      if (!inp.value || parseFloat(inp.value) < 5000) {
+        inp.style.borderColor = 'rgba(244,67,54,0.6)'; valid = false;
+      } else { inp.style.borderColor = ''; }
+    });
+    if (!valid) return;
+
+    const pctBelow   = ((market - current) / market) * 100;
+    const maxInc     = reraMaxIncrease(pctBelow);
+    const maxNewRent = Math.round(current * (1 + maxInc / 100));
+    const propInc    = ((proposed - current) / current) * 100;
+    const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+
+    wrap.querySelector('#ri-pctbelow').textContent = pctBelow > 0 ? pctBelow.toFixed(1) + '% below' : 'At or above market';
+    wrap.querySelector('#ri-maxpct').textContent   = maxInc + '%';
+    wrap.querySelector('#ri-maxrent').textContent  = fmt(maxNewRent);
+    wrap.querySelector('#ri-propinc').textContent  = propInc.toFixed(1) + '%';
+
+    const verdict = wrap.querySelector('#ri-verdict');
+    verdict.className = 'rera-verdict';
+
+    if (proposed <= current) {
+      verdict.className += ' allowed';
+      verdict.textContent = '✔ No increase — fully compliant with RERA rules.';
+    } else if (proposed <= maxNewRent) {
+      verdict.className += ' allowed';
+      verdict.textContent = `✔ ${fmt(proposed)} is within the RERA-allowed max of ${fmt(maxNewRent)}. Your landlord can legally proceed.`;
+    } else if (maxInc === 0) {
+      verdict.className += ' illegal';
+      verdict.textContent = `✘ Your rent is within 10% of market — RERA permits no increase. The proposed ${fmt(proposed - current)} rise is not legally enforceable.`;
+    } else {
+      verdict.className += ' illegal';
+      verdict.textContent = `✘ Proposed rent exceeds the RERA cap. Max allowed: ${fmt(maxNewRent)} (${maxInc}% increase). You can dispute this at the RDSC.`;
+    }
+
+    wrap.querySelector('#ri-results').classList.add('visible');
+    chat.scrollTop = chat.scrollHeight;
+  }
 
   // ── Auto-resize textarea ──────────────────────────────────────
   input.addEventListener('input', () => {
@@ -637,6 +1030,24 @@
     extractMemoryTags(question);
     input.value = '';
     input.style.height = 'auto';
+
+    // ── Widget intercept — no backend call needed ─────────────
+    const widget = detectWidget(question);
+    if (widget === 'movein') {
+      renderMoveinWidget();
+      appendFollowups(['What areas suit a budget of AED 80K?', 'What's the average rent in JVC?']);
+      sendBtn.disabled = false;
+      input.focus();
+      return;
+    }
+    if (widget === 'rera') {
+      renderReraWidget();
+      appendFollowups(['What's the average rent in Dubai Marina?', 'How do I file a RDSC complaint?']);
+      sendBtn.disabled = false;
+      input.focus();
+      return;
+    }
+
     sendBtn.disabled = true;
     showTyping();
 
