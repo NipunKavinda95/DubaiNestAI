@@ -84,16 +84,28 @@
   #memory-banner {
     display: none;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 6px 12px;
+    padding: 5px 10px;
     font-size: 11px;
     color: var(--text-dim);
-    max-width: 360px;
-    flex-wrap: wrap;
+    max-width: 420px;
+    overflow: hidden;
+    flex-wrap: nowrap;
   }
+
+  #memory-tags {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    scrollbar-width: none;
+  }
+
+  #memory-tags::-webkit-scrollbar { display: none; }
 
   #memory-banner.visible { display: flex; }
 
@@ -750,7 +762,7 @@
     const node = tmpl.content.cloneNode(true);
     chat.appendChild(node);
     chat.scrollTop = chat.scrollHeight;
-    addMemory('Move-in costs');
+    addMemory('Move-in');
   }
 
   // ── Render RERA widget ────────────────────────────────────────
@@ -895,7 +907,7 @@
     if (q.includes('jlt') || q.includes('jumeirah lake')) addMemory('JLT');
     if (q.includes('business bay')) addMemory('Business Bay');
     if (q.includes('rera') || q.includes('rent increase')) addMemory('RERA');
-    if (q.includes('move-in') || q.includes('deposit')) addMemory('Move-in costs');
+    if (q.includes('move-in') || q.includes('deposit') || q.includes('moving cost') || q.includes('calculate move')) addMemory('Move-in');
     if (q.includes('metro')) addMemory('Metro areas');
   }
 
