@@ -119,7 +119,41 @@ Return your answer as a JSON object with this exact structure (no markdown, no e
 }}
 """
 
-qa_prompt = PromptTemplate(STANDARD_PROMPT)
+COMPARE_PROMPT = """You are DubaiNest AI. Compare the two Dubai areas the user asks about.
+Use ONLY the CONTEXT below. Do not use outside knowledge.
+
+CONTEXT:
+{context_str}
+
+USER QUESTION:
+{query_str}
+
+Return ONLY a JSON object, no markdown, no extra text:
+{
+  "area1": {
+    "name": "Exact area name from context",
+    "studio": "AED X,XXX/yr or N/A",
+    "rent_1br": "AED XX,XXX/yr or N/A",
+    "rent_2br": "AED XX,XXX/yr or N/A",
+    "metro": "Yes or No",
+    "best_for": "who suits this area",
+    "vibe": "one sentence community feel"
+  },
+  "area2": {
+    "name": "Exact area name from context",
+    "studio": "AED X,XXX/yr or N/A",
+    "rent_1br": "AED XX,XXX/yr or N/A",
+    "rent_2br": "AED XX,XXX/yr or N/A",
+    "metro": "Yes or No",
+    "best_for": "who suits this area",
+    "vibe": "one sentence community feel"
+  },
+  "summary": "one sentence comparing the two areas"
+}
+"""
+
+qa_prompt      = PromptTemplate(STANDARD_PROMPT)
+compare_prompt = PromptTemplate(COMPARE_PROMPT)
 
 query_engine = index.as_query_engine(
     similarity_top_k=4,
@@ -129,6 +163,12 @@ query_engine = index.as_query_engine(
 
 shortlist_engine = index.as_query_engine(
     similarity_top_k=6,
+    streaming=False
+)
+
+compare_engine = index.as_query_engine(
+    similarity_top_k=8,
+    text_qa_template=compare_prompt,
     streaming=False
 )
 
@@ -289,23 +329,30 @@ def chat():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/compare", methods=["POST"])
+def compare():
+    data = request.get_json()
+    if not data or "area1" not in data or "area2" not in data:
+        return jsonify({"error": "Missing area1 or area2"}), 400
+    area1 = data["area1"].strip()
+    area2 = data["area2"].strip()
+    try:
+        q = f"Compare {area1} and {area2} in Dubai: studio rent, 1BR rent, 2BR rent, metro access, best for, community vibe"
+        response = compare_engine.query(q)
+        raw = str(response).strip()
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        result = json.loads(raw.strip())
+        return jsonify({"type": "compare", "data": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok", "bot": "DubaiNest AI v2 (Agent + RAG)"})
-
-
-@app.route("/debug-compare", methods=["GET"])
-def debug_compare():
-    try:
-        q = "What is the average rent in JVC and Dubai Marina? What is the metro access and community vibe?"
-        response = query_engine.query(q)
-        raw = str(response)
-        # Strip FOLLOWUPS section so it does not confuse things
-        if "FOLLOWUPS:" in raw:
-            raw = raw.split("FOLLOWUPS:")[0].strip()
-        return jsonify({"raw": raw, "lines": raw.split("\n"), "chars": len(raw)})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/", methods=["GET"])
