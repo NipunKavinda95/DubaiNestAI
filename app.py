@@ -355,6 +355,7 @@ def health():
     return jsonify({"status": "ok", "bot": "DubaiNest AI v2 (Agent + RAG)"})
 
 
+
 @app.route("/", methods=["GET"])
 def index_route():
     html = open("static/index.html", encoding="utf-8").read()
