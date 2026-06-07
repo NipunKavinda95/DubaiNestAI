@@ -604,8 +604,8 @@
   }
 
   .compare-row:last-child { border-bottom: none; }
-  .compare-row-label { color: var(--text-dim); }
-  .compare-row-value { color: var(--text); font-weight: 500; text-align: right; max-width: 55%; }
+  .compare-row-label { color: var(--text-dim); flex: 1; min-width: 0; }
+  .compare-row-value { color: var(--text); font-weight: 500; text-align: right; max-width: 60%; flex-shrink: 0; }
   .compare-row-value.good { color: #81C784; }
   .compare-row-value.mid  { color: var(--gold); }
 
@@ -902,25 +902,30 @@
       const stripMd = s => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
       const skipLine = s => /not available|knowledge base|dubailand|licensed agent/i.test(s);
 
-      const validLines = lines.map(l => stripMd(l.replace(/^[-•*]\s*/, '').trim())).filter(l => l.length > 3 && !skipLine(l));
+      // Strip area name prefix (e.g. "- JVC:" or "JVC -") from start of lines
+      const stripAreaPrefix = s => s.replace(new RegExp('^[-\\s]*' + area.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[:\\s-]*', 'i'), '').trim();
+
+      const validLines = lines
+        .map(l => stripMd(stripAreaPrefix(l.replace(/^[-•*]\s*/, '').trim())))
+        .filter(l => l.length > 5 && !skipLine(l));
 
       if (validLines.length > 0) {
         validLines.forEach(clean => {
           const row = document.createElement('div');
           row.className = 'compare-row';
           const colon = clean.indexOf(':');
-          if (colon > 0 && colon < 40) {
-            const label = stripMd(clean.slice(0, colon).trim());
-            const val   = stripMd(clean.slice(colon + 1).trim());
-            if (label && val) {
+          if (colon > 0 && colon < 45) {
+            const label = clean.slice(0, colon).trim();
+            const val   = clean.slice(colon + 1).trim();
+            if (label && val && !skipLine(val)) {
               row.innerHTML = `<span class="compare-row-label">${label}</span><span class="compare-row-value">${val}</span>`;
-            } else {
-              row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px">${clean}</span>`;
+            } else if (val && !skipLine(val)) {
+              row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px;max-width:100%">${val}</span>`;
             }
           } else {
-            row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px">${clean}</span>`;
+            row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px;max-width:100%">${clean}</span>`;
           }
-          rowsEl.appendChild(row);
+          if (row.innerHTML) rowsEl.appendChild(row);
         });
       } else {
         // Fallback: show a "limited data" note instead of garbage
