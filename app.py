@@ -1,15 +1,14 @@
 import os
 import json
-from flask import Flask, request, jsonify, render_template_string, session
+from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENAI_API_KEY  = os.environ.get("OPENAI_API_KEY")
+OPENAI_API_KEY   = os.environ.get("OPENAI_API_KEY")
 PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
 
-# ── LlamaIndex imports ────────────────────────────────────────────
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings, PromptTemplate
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.embeddings.openai import OpenAIEmbedding
@@ -18,64 +17,36 @@ from pinecone import Pinecone, ServerlessSpec
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.core import StorageContext
 
-# ── Flask app ─────────────────────────────────────────────────────
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET", "dubainest-secret-key-change-in-prod")
+app.secret_key = os.environ.get("FLASK_SECRET", "dubainest-v2")
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
-# ── Build RAG pipeline on startup ────────────────────────────────
-print("🔧 Building RAG pipeline (LlamaIndex + Agent)...")
+print("Building RAG pipeline...")
 
-Settings.llm = OpenAI(
-    model="gpt-4o-mini",
-    temperature=0,
-    max_tokens=800,
-    api_key=OPENAI_API_KEY
-)
-Settings.embed_model = OpenAIEmbedding(
-    model="text-embedding-3-small",
-    api_key=OPENAI_API_KEY
-)
-Settings.transformations = [
-    SentenceSplitter(chunk_size=500, chunk_overlap=50)
-]
+Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0, max_tokens=800, api_key=OPENAI_API_KEY)
+Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small", api_key=OPENAI_API_KEY)
+Settings.transformations = [SentenceSplitter(chunk_size=500, chunk_overlap=50)]
 
-DATA_FOLDER = "./data"
-documents = SimpleDirectoryReader(
-    input_dir=DATA_FOLDER,
-    required_exts=[".csv", ".txt"],
-    recursive=False
-).load_data()
-print(f"✅ Loaded {len(documents)} documents")
+documents = SimpleDirectoryReader(input_dir="./data", required_exts=[".csv", ".txt"], recursive=False).load_data()
+print(f"Loaded {len(documents)} documents")
 
 pc = Pinecone(api_key=PINECONE_API_KEY)
 index_name = "dubainest-ai"
-existing_indexes = [idx["name"] for idx in pc.list_indexes()]
-if index_name not in existing_indexes:
-    pc.create_index(
-        name=index_name,
-        dimension=1536,
-        metric="cosine",
-        spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-    )
+existing = [idx["name"] for idx in pc.list_indexes()]
+if index_name not in existing:
+    pc.create_index(name=index_name, dimension=1536, metric="cosine", spec=ServerlessSpec(cloud="aws", region="us-east-1"))
 
-pinecone_index = pc.Index(index_name)
-vector_store   = PineconeVectorStore(pinecone_index=pinecone_index)
+pinecone_index  = pc.Index(index_name)
+vector_store    = PineconeVectorStore(pinecone_index=pinecone_index)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
+index           = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
+print("Pinecone ready")
 
-index = VectorStoreIndex.from_documents(
-    documents,
-    storage_context=storage_context,
-    show_progress=True
-)
-print("✅ Pinecone VectorStore ready")
-
-# ── Standard RAG prompt ───────────────────────────────────────────
 STANDARD_PROMPT = """\
 You are DubaiNest AI, a helpful Dubai real estate assistant.
 Answer ONLY using the CONTEXT below. Do not use outside knowledge.
 If the answer is not in context, say: "I don't have that in my knowledge base. Please check dubailand.gov.ae or a licensed agent."
-Always quote prices in AED. Be concise. Use bullet points for lists. Never give legal advice — refer to RDSC.
+Always quote prices in AED. Be concise. Use bullet points for lists. Never give legal advice - refer to RDSC.
 
 CONTEXT:
 {context_str}
@@ -87,40 +58,15 @@ Answer based only on the context above. At the end of your answer, on a new line
 FOLLOWUPS: [suggest 2-3 short follow-up questions the user might ask next, as a JSON array of strings]
 """
 
-# ── Shortlist agent prompt ────────────────────────────────────────
 SHORTLIST_PROMPT = """\
-You are DubaiNest AI, a Dubai real estate assistant helping a user find the best area to live.
+You are DubaiNest AI helping a user find the best area to live in Dubai.
 
-The user's preferences are:
+User preferences:
 - Budget: {budget}
-- Lifestyle / Who's moving: {lifestyle}
-- Area preference or must-haves: {area_pref}
+- Lifestyle: {lifestyle}
+- Area preference: {area_pref}
 
-Using ONLY the CONTEXT below, recommend the TOP 3 areas that best match these preferences.
-
-CONTEXT:
-{context_str}
-
-Return your answer as a JSON object with this exact structure (no markdown, no extra text):
-{{
-  "shortlist": [
-    {{
-      "rank": 1,
-      "area": "Area Name",
-      "avg_rent_1br": "AED XX,XXX/yr",
-      "avg_rent_2br": "AED XX,XXX/yr",
-      "metro_access": "Yes / No / Nearby",
-      "vibe": "One sentence describing the area feel",
-      "best_for": "Who this suits",
-      "reason": "Why this matches the user's preferences"
-    }}
-  ],
-  "summary": "One sentence overall recommendation"
-}}
-"""
-
-COMPARE_PROMPT = """You are DubaiNest AI. Compare the two Dubai areas the user asks about.
-Use ONLY the CONTEXT below. Do not use outside knowledge.
+Using ONLY the CONTEXT below, recommend TOP 3 matching areas.
 
 CONTEXT:
 {context_str}
@@ -128,205 +74,140 @@ CONTEXT:
 USER QUESTION:
 {query_str}
 
-Return ONLY a JSON object, no markdown, no extra text:
+Return ONLY this JSON, no markdown:
 {{
-  "area1": {{
-    "name": "Exact area name from context",
-    "studio": "AED X,XXX/yr or N/A",
-    "rent_1br": "AED XX,XXX/yr or N/A",
-    "rent_2br": "AED XX,XXX/yr or N/A",
-    "metro": "Yes or No",
-    "best_for": "who suits this area",
-    "vibe": "one sentence community feel"
-  }},
-  "area2": {{
-    "name": "Exact area name from context",
-    "studio": "AED X,XXX/yr or N/A",
-    "rent_1br": "AED XX,XXX/yr or N/A",
-    "rent_2br": "AED XX,XXX/yr or N/A",
-    "metro": "Yes or No",
-    "best_for": "who suits this area",
-    "vibe": "one sentence community feel"
-  }},
-  "summary": "one sentence comparing the two areas"
+  "shortlist": [
+    {{
+      "rank": 1,
+      "area": "Area Name",
+      "avg_rent_1br": "AED XX,XXX/yr",
+      "avg_rent_2br": "AED XX,XXX/yr",
+      "metro_access": "Yes / No",
+      "vibe": "One sentence",
+      "best_for": "Who this suits",
+      "reason": "Why this matches"
+    }}
+  ],
+  "summary": "One sentence overall recommendation"
 }}
 """
 
-qa_prompt      = PromptTemplate(STANDARD_PROMPT)
-compare_prompt = PromptTemplate(COMPARE_PROMPT)
+qa_prompt = PromptTemplate(STANDARD_PROMPT)
 
-query_engine = index.as_query_engine(
-    similarity_top_k=4,
-    text_qa_template=qa_prompt,
-    streaming=False
-)
+query_engine = index.as_query_engine(similarity_top_k=4, text_qa_template=qa_prompt, streaming=False)
+shortlist_engine = index.as_query_engine(similarity_top_k=6, streaming=False)
 
-shortlist_engine = index.as_query_engine(
-    similarity_top_k=6,
-    streaming=False
-)
+print("RAG ready!")
 
-compare_engine = index.as_query_engine(
-    similarity_top_k=8,
-    text_qa_template=compare_prompt,
-    streaming=False
-)
-
-print("✅ RAG chain + Agent ready!")
-
-
-# ── Intent detection ──────────────────────────────────────────────
-SHORTLIST_KEYWORDS = [
-    "find me", "recommend", "suggest", "which area", "where should i",
+SHORTLIST_KEYWORDS = ["find me", "recommend", "suggest", "which area", "where should i",
     "best area", "suitable area", "help me find", "looking for",
-    "where to live", "shortlist", "top areas", "good area for"
-]
+    "where to live", "shortlist", "top areas", "good area for"]
 
-def is_shortlist_intent(question: str) -> bool:
-    q = question.lower()
-    return any(kw in q for kw in SHORTLIST_KEYWORDS)
+def is_shortlist_intent(q):
+    return any(kw in q.lower() for kw in SHORTLIST_KEYWORDS)
 
-
-# ── Parse follow-ups from standard response ───────────────────────
-def parse_followups(answer: str):
-    """Extract FOLLOWUPS JSON from answer text, return (clean_answer, followups_list)."""
+def parse_followups(answer):
     followups = []
     clean = answer
     if "FOLLOWUPS:" in answer:
         parts = answer.split("FOLLOWUPS:", 1)
         clean = parts[0].strip()
         try:
-            raw = parts[1].strip()
-            followups = json.loads(raw)
+            followups = json.loads(parts[1].strip())
         except Exception:
             followups = []
     return clean, followups
 
 
-# ── API Routes ────────────────────────────────────────────────────
-
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
     if not data or "question" not in data:
-        return jsonify({"error": "Missing question field"}), 400
+        return jsonify({"error": "Missing question"}), 400
 
-    question     = data["question"].strip()
-    agent_state  = data.get("agent_state", {})   # frontend passes state back
-    mode         = agent_state.get("mode", "normal")
+    question    = data["question"].strip()
+    agent_state = data.get("agent_state", {})
+    mode        = agent_state.get("mode", "normal")
 
     if not question:
-        return jsonify({"error": "Question cannot be empty"}), 400
+        return jsonify({"error": "Empty question"}), 400
 
-    # ── SHORTLIST AGENT FLOW ──────────────────────────────────────
+    # Shortlist agent flow
     if mode == "shortlist_collecting":
         step = agent_state.get("step", 1)
-
         if step == 1:
-            # Just collected budget
             return jsonify({
                 "type": "agent_question",
-                "message": "Got it! 👥 Who's moving in? *(e.g. single professional, young couple, family with kids)*",
-                "agent_state": {
-                    "mode": "shortlist_collecting",
-                    "step": 2,
-                    "budget": question,
-                    "lifestyle": "",
-                    "area_pref": ""
-                }
+                "message": "Got it! Who's moving in? (e.g. single professional, young couple, family with kids)",
+                "agent_state": {"mode": "shortlist_collecting", "step": 2, "budget": question, "lifestyle": "", "area_pref": ""}
             })
-
         elif step == 2:
-            # Just collected lifestyle
             return jsonify({
                 "type": "agent_question",
-                "message": "Almost there! 🗺️ Any area preference or must-have? *(e.g. near metro, close to beach, quiet neighbourhood — or say 'no preference')*",
-                "agent_state": {
-                    "mode": "shortlist_collecting",
-                    "step": 3,
-                    "budget": agent_state.get("budget", ""),
-                    "lifestyle": question,
-                    "area_pref": ""
-                }
+                "message": "Almost there! Any area preference or must-have? (e.g. near metro, close to beach — or say no preference)",
+                "agent_state": {"mode": "shortlist_collecting", "step": 3, "budget": agent_state.get("budget", ""), "lifestyle": question, "area_pref": ""}
             })
-
         elif step == 3:
-            # All collected — run shortlist query
             budget    = agent_state.get("budget", "not specified")
             lifestyle = agent_state.get("lifestyle", "not specified")
             area_pref = question
-
             shortlist_q = f"Areas in Dubai for budget {budget}, lifestyle {lifestyle}, preference {area_pref}"
-            raw_prompt = SHORTLIST_PROMPT.format(
-                budget=budget,
-                lifestyle=lifestyle,
-                area_pref=area_pref,
-                context_str="{context_str}",
-                query_str="{query_str}"
+            raw_prompt  = SHORTLIST_PROMPT.format(
+                budget=budget, lifestyle=lifestyle, area_pref=area_pref,
+                context_str="{context_str}", query_str="{query_str}"
             )
-            custom_prompt = PromptTemplate(raw_prompt)
-            shortlist_engine.update_prompts({"response_synthesizer:text_qa_template": custom_prompt})
-
+            shortlist_engine.update_prompts({"response_synthesizer:text_qa_template": PromptTemplate(raw_prompt)})
             try:
                 response = shortlist_engine.query(shortlist_q)
                 raw = str(response).strip()
-                # Strip markdown code fences if present
                 if raw.startswith("```"):
                     raw = raw.split("```")[1]
-                    if raw.startswith("json"):
-                        raw = raw[4:]
+                    if raw.startswith("json"): raw = raw[4:]
                 result = json.loads(raw.strip())
                 return jsonify({
                     "type": "shortlist",
                     "shortlist": result.get("shortlist", []),
                     "summary": result.get("summary", ""),
                     "agent_state": {"mode": "normal"},
-                    "followups": [
-                        "What's the move-in cost for my top pick?",
-                        "Can my landlord raise rent in this area?",
-                        "Compare the top 2 areas side by side"
-                    ]
+                    "followups": ["What is the move-in cost?", "Can my landlord raise rent?", "Compare the top 2 areas"]
                 })
             except Exception as e:
-                return jsonify({"error": f"Shortlist generation failed: {str(e)}"}), 500
+                return jsonify({"error": f"Shortlist failed: {str(e)}"}), 500
 
-    # ── DETECT SHORTLIST INTENT ───────────────────────────────────
+    # Detect shortlist intent
     if mode == "normal" and is_shortlist_intent(question):
         return jsonify({
             "type": "agent_question",
-            "message": "Great, let me build you a personalised shortlist! 🏙️\n\n💰 **What's your annual budget?** *(e.g. AED 60,000, AED 120,000)*",
-            "agent_state": {
-                "mode": "shortlist_collecting",
-                "step": 1,
-                "budget": "",
-                "lifestyle": "",
-                "area_pref": ""
-            }
+            "message": "Great, let me build you a personalised shortlist!\n\nWhat is your annual budget? (e.g. AED 60,000 or AED 120,000)",
+            "agent_state": {"mode": "shortlist_collecting", "step": 1, "budget": "", "lifestyle": "", "area_pref": ""}
         })
 
-    # ── STANDARD RAG CHAT ─────────────────────────────────────────
+    # Standard RAG
     try:
-        response  = query_engine.query(question)
-        answer    = str(response)
+        response = query_engine.query(question)
+        answer   = str(response)
         clean, followups = parse_followups(answer)
-
-        # Fallback chips if LLM didn't generate any
         if not followups:
-            followups = [
-                "What's the average rent in that area?",
-                "What are move-in costs?",
-                "Is this area close to metro?"
-            ]
-
-        return jsonify({
-            "type": "answer",
-            "answer": clean,
-            "question": question,
-            "followups": followups,
-            "agent_state": {"mode": "normal"}
-        })
+            followups = ["What is the average rent in that area?", "What are move-in costs?", "Is this area close to metro?"]
+        return jsonify({"type": "answer", "answer": clean, "question": question, "followups": followups, "agent_state": {"mode": "normal"}})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "bot": "DubaiNest AI v2"})
+
+
+@app.route("/", methods=["GET"])
+def index_route():
+    html = open("static/index.html", encoding="utf-8").read()
+    return render_template_string(html.replace("__API_BASE_URL__", ""))
+
+
+if __name__ == "__main__":
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=7860)
 
 
 @app.route("/compare", methods=["POST"])
@@ -334,35 +215,26 @@ def compare():
     data = request.get_json()
     if not data or "area1" not in data or "area2" not in data:
         return jsonify({"error": "Missing area1 or area2"}), 400
+
     area1 = data["area1"].strip()
     area2 = data["area2"].strip()
+
     try:
-        q = f"Compare {area1} and {area2} in Dubai: studio rent, 1BR rent, 2BR rent, metro access, best for, community vibe"
-        response = compare_engine.query(q)
-        raw = str(response).strip()
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
-        return jsonify({"type": "compare", "data": result})
+        # Query each area separately — reliable, no JSON prompt issues
+        q1 = f"What is the average rent for studio, 1BR, 2BR in {area1}? What is metro access, community vibe, and who is it best suited for?"
+        q2 = f"What is the average rent for studio, 1BR, 2BR in {area2}? What is metro access, community vibe, and who is it best suited for?"
+
+        r1 = str(query_engine.query(q1))
+        r2 = str(query_engine.query(q2))
+
+        # Strip followups if present
+        if "FOLLOWUPS:" in r1: r1 = r1.split("FOLLOWUPS:")[0].strip()
+        if "FOLLOWUPS:" in r2: r2 = r2.split("FOLLOWUPS:")[0].strip()
+
+        return jsonify({
+            "type": "compare",
+            "area1": {"name": area1.title(), "text": r1},
+            "area2": {"name": area2.title(), "text": r2}
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "bot": "DubaiNest AI v2 (Agent + RAG)"})
-
-
-
-@app.route("/", methods=["GET"])
-def index_route():
-    html = open("static/index.html", encoding="utf-8").read()
-    html = html.replace("__API_BASE_URL__", "")
-    return render_template_string(html)
-
-
-if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=7860)

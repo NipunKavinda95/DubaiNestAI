@@ -1,751 +1,249 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DubaiNest AI</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap"
-    rel="stylesheet" />
-  <style>
-    :root {
-      --gold: #C9A84C;
-      --gold-light: #E8CC80;
-      --gold-dim: rgba(201, 168, 76, 0.15);
-      --bg: #0A0A0F;
-      --surface: #111118;
-      --surface2: #18181F;
-      --border: rgba(201, 168, 76, 0.2);
-      --text: #F0EDE8;
-      --text-dim: rgba(240, 237, 232, 0.5);
-      --user-bg: rgba(201, 168, 76, 0.12);
-      --bot-bg: rgba(255, 255, 255, 0.04);
-      --radius: 16px;
-      --green: #4CAF50;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% 0%, rgba(201, 168, 76, 0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201, 168, 76, 0.04) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── Header ── */
-    header {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 28px;
-      background: rgba(10, 10, 15, 0.9);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(12px);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
-    }
-
-    .logo-text h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      color: var(--text);
-      line-height: 1;
-    }
-
-    .logo-text span {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-weight: 400;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* Session memory banner */
-    #memory-banner {
-      display: none;
-      align-items: center;
-      gap: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 5px 10px;
-      font-size: 11px;
-      color: var(--text-dim);
-      max-width: 420px;
-      overflow: hidden;
-      flex-wrap: nowrap;
-    }
-
-    #memory-tags {
-      display: flex;
-      gap: 5px;
-      overflow-x: auto;
-      flex-wrap: nowrap;
-      align-items: center;
-      scrollbar-width: none;
-    }
-
-    #memory-tags::-webkit-scrollbar {
-      display: none;
-    }
-
-    #memory-banner.visible {
-      display: flex;
-    }
-
-    .memory-label {
-      color: var(--gold);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-size: 10px;
-      flex-shrink: 0;
-    }
-
-    .memory-tag {
-      background: var(--gold-dim);
-      border: 1px solid var(--border);
-      color: var(--gold-light);
-      border-radius: 20px;
-      padding: 2px 8px;
-      font-size: 11px;
-    }
-
-    .status-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 6px var(--green);
-    }
-
-    /* ── Chat area ── */
-    #chat {
-      position: relative;
-      z-index: 1;
-      flex: 1;
-      overflow-y: auto;
-      padding: 28px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      scroll-behavior: smooth;
-    }
-
-    #chat::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    #chat::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #chat::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
-
-    /* ── Welcome ── */
-    #welcome {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      padding: 40px 20px;
-      text-align: center;
-      animation: fadeIn 0.6s ease;
-    }
-
-    .welcome-icon {
-      width: 72px;
-      height: 72px;
-      background: linear-gradient(135deg, var(--gold-dim), rgba(201, 168, 76, 0.25));
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 32px rgba(201, 168, 76, 0.1);
-    }
-
-    #welcome h2 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 30px;
-      font-weight: 400;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
-
-    #welcome p {
-      color: var(--text-dim);
-      font-size: 14px;
-      max-width: 400px;
-      line-height: 1.7;
-      margin-bottom: 32px;
-    }
-
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      max-width: 600px;
-    }
-
-    .chip {
-      padding: 9px 16px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 13px;
-      color: var(--text-dim);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .chip:hover {
-      background: var(--gold-dim);
-      border-color: var(--gold);
-      color: var(--gold-light);
-    }
-
-    /* ── Messages ── */
-    .msg-row {
-      display: flex;
-      padding: 6px 28px;
-      animation: slideUp 0.25s ease;
-    }
-
-    .msg-row.user {
-      justify-content: flex-end;
-    }
-
-    .msg-row.bot {
-      justify-content: flex-start;
-      flex-direction: column;
-    }
-
-    .bubble {
-      max-width: 68%;
-      padding: 14px 18px;
-      border-radius: var(--radius);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .msg-row.user .bubble {
-      background: var(--user-bg);
-      border: 1px solid rgba(201, 168, 76, 0.25);
-      border-bottom-right-radius: 4px;
-      color: var(--text);
-    }
-
-    .msg-row.bot .bubble {
-      background: var(--bot-bg);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-bottom-left-radius: 4px;
-      color: var(--text);
-    }
-
-    .bot-name {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      font-weight: 500;
-    }
-
-    /* ── Agent question bubble (styled differently) ── */
-    .msg-row.agent .bubble {
-      background: linear-gradient(135deg, rgba(201, 168, 76, 0.08), rgba(201, 168, 76, 0.04));
-      border: 1px solid rgba(201, 168, 76, 0.3);
-      border-bottom-left-radius: 4px;
-      color: var(--text);
-    }
-
-    /* ── Shortlist cards ── */
-    .shortlist-wrap {
-      padding: 6px 28px;
-      animation: slideUp 0.3s ease;
-    }
-
-    .shortlist-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .shortlist-header .bot-name {
-      margin-bottom: 0;
-    }
-
-    .shortlist-summary {
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-bottom: 16px;
-      max-width: 600px;
-      line-height: 1.6;
-    }
-
-    .shortlist-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 700px;
-    }
-
-    .area-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 20px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.2s;
-    }
-
-    .area-card:hover {
-      border-color: var(--gold);
-    }
-
-    .area-card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: linear-gradient(180deg, var(--gold), var(--gold-light));
-    }
-
-    .card-rank {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 28px;
-      height: 28px;
-      background: var(--gold-dim);
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--gold);
-    }
-
-    .card-area {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-      padding-right: 36px;
-    }
-
-    .card-vibe {
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-
-    .card-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .stat-pill {
-      background: var(--surface);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .stat-pill strong {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .card-reason {
-      font-size: 12px;
-      color: var(--gold);
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
-      margin-top: 2px;
-      line-height: 1.5;
-    }
-
-    .card-best-for {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
-
-    /* ── Follow-up chips (dynamic) ── */
-    .followup-row {
-      padding: 4px 28px 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      animation: fadeIn 0.3s ease 0.2s both;
-    }
-
-    .followup-chip {
-      padding: 7px 14px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 12px;
-      color: var(--text-dim);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .followup-chip:hover {
-      background: var(--gold-dim);
-      border-color: var(--gold);
-      color: var(--gold-light);
-    }
-
-    /* Typing indicator */
-    .typing-bubble {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      padding: 16px 20px;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--gold);
-      animation: bounce 1.2s infinite;
-    }
-
-    .dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    /* ── Input area ── */
-    footer {
-      position: relative;
-      z-index: 10;
-      padding: 16px 28px 20px;
-      background: rgba(10, 10, 15, 0.95);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(12px);
-    }
-
-    .input-wrap {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px 10px 10px 18px;
-      transition: border-color 0.2s;
-    }
-
-    .input-wrap:focus-within {
-      border-color: var(--gold);
-    }
-
-    #input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 300;
-      resize: none;
-      max-height: 120px;
-      min-height: 22px;
-      line-height: 1.5;
-    }
-
-    #input::placeholder {
-      color: var(--text-dim);
-    }
-
-    #send {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: opacity 0.2s, transform 0.15s;
-    }
-
-    #send:hover {
-      opacity: 0.85;
-      transform: scale(1.05);
-    }
-
-    #send:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    #send svg {
-      width: 16px;
-      height: 16px;
-      fill: #0A0A0F;
-    }
-
-    .footer-note {
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-top: 10px;
-      letter-spacing: 0.04em;
-    }
-
-    /* ── Inline tool widgets ── */
-    .widget-wrap {
-      padding: 6px 28px;
-      animation: slideUp 0.3s ease;
-    }
-
-    .widget-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 22px;
-      max-width: 520px;
-      position: relative;
-    }
-
-    .widget-title {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-weight: 500;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .widget-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .widget-row label {
-      font-size: 13px;
-      color: var(--text-dim);
-      min-width: 130px;
-      flex-shrink: 0;
-    }
-
-    .widget-input {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      width: 160px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .widget-input:focus {
-      border-color: var(--gold);
-    }
-
-    .widget-select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .widget-btn {
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border: none;
-      border-radius: 8px;
-      padding: 8px 18px;
-      color: #0A0A0F;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      margin-top: 4px;
-    }
-
-    .widget-btn:hover {
-      opacity: 0.85;
-    }
-
-    .widget-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 14px 0;
-    }
-
-    .widget-results {
-      display: none;
-    }
-
-    .widget-results.visible {
-      display: block;
-    }
-
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .result-item {
-      background: var(--surface);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .result-label {
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-bottom: 3px;
-    }
-
-    .result-value {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .result-total {
-      background: var(--gold-dim);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .result-total-label {
-      font-size: 13px;
-      color: var(--gold);
-      letter-spacing: 0.04em;
-    }
-
-    .result-total-value {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--gold-light);
-    }
-
-    .rera-verdict {
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-top: 10px;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .rera-verdict.allowed {
-      background: rgba(76, 175, 80, 0.1);
+import os
+import json
+from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
+from dotenv import load_dotenv
+
+load_dotenv()
+
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
+
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings, PromptTemplate
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.embeddings.openai import OpenAIEmbedding
+from llama_index.llms.openai import OpenAI
+from pinecone import Pinecone, ServerlessSpec
+from llama_index.vector_stores.pinecone import PineconeVectorStore
+from llama_index.core import StorageContext
+
+app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET", "dubainest-v2")
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+
+print("Building RAG pipeline...")
+
+Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0, max_tokens=800, api_key=OPENAI_API_KEY)
+Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small", api_key=OPENAI_API_KEY)
+Settings.transformations = [SentenceSplitter(chunk_size=500, chunk_overlap=50)]
+
+documents = SimpleDirectoryReader(input_dir="./data", required_exts=[".csv", ".txt"], recursive=False).load_data()
+print(f"Loaded {len(documents)} documents")
+
+pc = Pinecone(api_key=PINECONE_API_KEY)
+index_name = "dubainest-ai"
+existing = [idx["name"] for idx in pc.list_indexes()]
+if index_name not in existing:
+pc.create_index(name=index_name, dimension=1536, metric="cosine", spec=ServerlessSpec(cloud="aws", region="us-east-1"))
+
+pinecone_index = pc.Index(index_name)
+vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+index = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
+print("Pinecone ready")
+
+STANDARD_PROMPT = """\
+You are DubaiNest AI, a helpful Dubai real estate assistant.
+Answer ONLY using the CONTEXT below. Do not use outside knowledge.
+If the answer is not in context, say: "I don't have that in my knowledge base. Please check dubailand.gov.ae or a
+licensed agent."
+Always quote prices in AED. Be concise. Use bullet points for lists. Never give legal advice - refer to RDSC.
+
+CONTEXT:
+{context_str}
+
+USER QUESTION:
+{query_str}
+
+Answer based only on the context above. At the end of your answer, on a new line write:
+FOLLOWUPS: [suggest 2-3 short follow-up questions the user might ask next, as a JSON array of strings]
+"""
+
+SHORTLIST_PROMPT = """\
+You are DubaiNest AI helping a user find the best area to live in Dubai.
+
+User preferences:
+- Budget: {budget}
+- Lifestyle: {lifestyle}
+- Area preference: {area_pref}
+
+Using ONLY the CONTEXT below, recommend TOP 3 matching areas.
+
+CONTEXT:
+{context_str}
+
+USER QUESTION:
+{query_str}
+
+Return ONLY this JSON, no markdown:
+{{
+"shortlist": [
+{{
+"rank": 1,
+"area": "Area Name",
+"avg_rent_1br": "AED XX,XXX/yr",
+"avg_rent_2br": "AED XX,XXX/yr",
+"metro_access": "Yes / No",
+"vibe": "One sentence",
+"best_for": "Who this suits",
+"reason": "Why this matches"
+}}
+],
+"summary": "One sentence overall recommendation"
+}}
+"""
+
+qa_prompt = PromptTemplate(STANDARD_PROMPT)
+
+query_engine = index.as_query_engine(similarity_top_k=4, text_qa_template=qa_prompt, streaming=False)
+shortlist_engine = index.as_query_engine(similarity_top_k=6, streaming=False)
+
+print("RAG ready!")
+
+SHORTLIST_KEYWORDS = ["find me", "recommend", "suggest", "which area", "where should i",
+"best area", "suitable area", "help me find", "looking for",
+"where to live", "shortlist", "top areas", "good area for"]
+
+def is_shortlist_intent(q):
+return any(kw in q.lower() for kw in SHORTLIST_KEYWORDS)
+
+def parse_followups(answer):
+followups = []
+clean = answer
+if "FOLLOWUPS:" in answer:
+parts = answer.split("FOLLOWUPS:", 1)
+clean = parts[0].strip()
+try:
+followups = json.loads(parts[1].strip())
+except Exception:
+followups = []
+return clean, followups
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+data = request.get_json()
+if not data or "question" not in data:
+return jsonify({"error": "Missing question"}), 400
+
+question = data["question"].strip()
+agent_state = data.get("agent_state", {})
+mode = agent_state.get("mode", "normal")
+
+if not question:
+return jsonify({"error": "Empty question"}), 400
+
+# Shortlist agent flow
+if mode == "shortlist_collecting":
+step = agent_state.get("step", 1)
+if step == 1:
+return jsonify({
+"type": "agent_question",
+"message": "Got it! Who's moving in? (e.g. single professional, young couple, family with kids)",
+"agent_state": {"mode": "shortlist_collecting", "step": 2, "budget": question, "lifestyle": "", "area_pref": ""}
+})
+elif step == 2:
+return jsonify({
+"type": "agent_question",
+"message": "Almost there! Any area preference or must-have? (e.g. near metro, close to beach — or say no preference)",
+"agent_state": {"mode": "shortlist_collecting", "step": 3, "budget": agent_state.get("budget", ""), "lifestyle":
+question, "area_pref": ""}
+})
+elif step == 3:
+budget = agent_state.get("budget", "not specified")
+lifestyle = agent_state.get("lifestyle", "not specified")
+area_pref = question
+shortlist_q = f"Areas in Dubai for budget {budget}, lifestyle {lifestyle}, preference {area_pref}"
+raw_prompt = SHORTLIST_PROMPT.format(
+budget=budget, lifestyle=lifestyle, area_pref=area_pref,
+context_str="{context_str}", query_str="{query_str}"
+)
+shortlist_engine.update_prompts({"response_synthesizer:text_qa_template": PromptTemplate(raw_prompt)})
+try:
+response = shortlist_engine.query(shortlist_q)
+raw = str(response).strip()
+if raw.startswith("```"):
+raw = raw.split("```")[1]
+if raw.startswith("json"): raw = raw[4:]
+result = json.loads(raw.strip())
+return jsonify({
+"type": "shortlist",
+"shortlist": result.get("shortlist", []),
+"summary": result.get("summary", ""),
+"agent_state": {"mode": "normal"},
+"followups": ["What is the move-in cost?", "Can my landlord raise rent?", "Compare the top 2 areas"]
+})
+except Exception as e:
+return jsonify({"error": f"Shortlist failed: {str(e)}"}), 500
+
+# Detect shortlist intent
+if mode == "normal" and is_shortlist_intent(question):
+return jsonify({
+"type": "agent_question",
+"message": "Great, let me build you a personalised shortlist!\n\nWhat is your annual budget? (e.g. AED 60,000 or AED
+120,000)",
+"agent_state": {"mode": "shortlist_collecting", "step": 1, "budget": "", "lifestyle": "", "area_pref": ""}
+})
+
+# Standard RAG
+try:
+response = query_engine.query(question)
+answer = str(response)
+clean, followups = parse_followups(answer)
+if not followups:
+followups = ["What is the average rent in that area?", "What are move-in costs?", "Is this area close to metro?"]
+return jsonify({"type": "answer", "answer": clean, "question": question, "followups": followups, "agent_state": {"mode":
+"normal"}})
+except Exception as e:
+return jsonify({"error": str(e)}), 500
+
+
+@app.route("/health", methods=["GET"])
+def health():
+return jsonify({"status": "ok", "bot": "DubaiNest AI v2"})
+
+
+@app.route("/", methods=["GET"])
+def index_route():
+html = open("static/index.html", encoding="utf-8").read()
+return render_template_string(html.replace("__API_BASE_URL__", ""))
+
+
+if __name__ == "__main__":
+from waitress import serve
+serve(app, host="0.0.0.0", port=7860)
+
+
+@app.route("/compare", methods=["POST"])
+def compare():
+data = request.get_json()
+if not data or "area1" not in data or "area2" not in data:
+return jsonify({"error": "Missing area1 or area2"}), 400
+
+area1 = data["area1"].strip()
+area2 = data["area2"].strip()
+
+try:
+# Query each area separately — reliable, no JSON prompt issues
+q1 = f"What is the average rent for studio, 1BR, 2BR in {area1}? What is metro access, community vibe, and who is it
+best suited for?"
+q2 = f"What is the average rent for studio, 1BR, 2BR in {area2}? What is metro access, community vibe, and who is it
+best suited for?"
+
+r1 = str(query_engine.query(q1))
+r2 = str(query_engine.query(q2))
+
+# Strip followups if present
+if "FOLLOWUPS:" in r1: r1 = r1.split("FOLLOWUPS:")[0].strip()
+if "FOLLOWUPS:" in r2: r2 = r2.split("FOLLOWUPS:")[0].strip()
+
+return jsonify({
+"type": "compare",
+"area1": {"name": area1.title(), "text": r1},
+"area2": {"name": area2.title(), "text": r2}
+})
+except Exception as e:
+return jsonify({"error": str(e)}), 500    background: rgba(76, 175, 80, 0.1);
       border: 1px solid rgba(76, 175, 80, 0.3);
       color: #81C784;
     }
@@ -1648,5 +1146,5 @@
     }
   </script>
 </body>
-
+AV
 </html>
