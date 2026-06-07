@@ -1,1239 +1,893 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DubaiNest AI</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap"
-    rel="stylesheet" />
-  <style>
-    :root {
-      --gold: #C9A84C;
-      --gold-light: #E8CC80;
-      --gold-dim: rgba(201, 168, 76, 0.15);
-      --bg: #0A0A0F;
-      --surface: #111118;
-      --surface2: #18181F;
-      --border: rgba(201, 168, 76, 0.2);
-      --text: #F0EDE8;
-      --text-dim: rgba(240, 237, 232, 0.5);
-      --user-bg: rgba(201, 168, 76, 0.12);
-      --bot-bg: rgba(255, 255, 255, 0.04);
-      --radius: 16px;
-      --green: #4CAF50;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 20% 0%, rgba(201, 168, 76, 0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201, 168, 76, 0.04) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── Header ── */
-    header {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 28px;
-      background: rgba(10, 10, 15, 0.9);
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(12px);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
-    }
-
-    .logo-text h1 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      color: var(--text);
-      line-height: 1;
-    }
-
-    .logo-text span {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-weight: 400;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* Session memory banner */
-    #memory-banner {
-      display: none;
-      align-items: center;
-      gap: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 5px 10px;
-      font-size: 11px;
-      color: var(--text-dim);
-      max-width: 420px;
-      overflow: hidden;
-      flex-wrap: nowrap;
-    }
-
-    #memory-tags {
-      display: flex;
-      gap: 5px;
-      overflow-x: auto;
-      flex-wrap: nowrap;
-      align-items: center;
-      scrollbar-width: none;
-    }
-
-    #memory-tags::-webkit-scrollbar {
-      display: none;
-    }
-
-    #memory-banner.visible {
-      display: flex;
-    }
-
-    .memory-label {
-      color: var(--gold);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-size: 10px;
-      flex-shrink: 0;
-    }
-
-    .memory-tag {
-      background: var(--gold-dim);
-      border: 1px solid var(--border);
-      color: var(--gold-light);
-      border-radius: 20px;
-      padding: 2px 8px;
-      font-size: 11px;
-    }
-
-    .status-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      font-size: 11px;
-      color: var(--text-dim);
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 6px var(--green);
-    }
-
-    /* ── Chat area ── */
-    #chat {
-      position: relative;
-      z-index: 1;
-      flex: 1;
-      overflow-y: auto;
-      padding: 28px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      scroll-behavior: smooth;
-    }
-
-    #chat::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    #chat::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #chat::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
-
-    /* ── Welcome ── */
-    #welcome {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      padding: 40px 20px;
-      text-align: center;
-      animation: fadeIn 0.6s ease;
-    }
-
-    .welcome-icon {
-      width: 72px;
-      height: 72px;
-      background: linear-gradient(135deg, var(--gold-dim), rgba(201, 168, 76, 0.25));
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 32px rgba(201, 168, 76, 0.1);
-    }
-
-    #welcome h2 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 30px;
-      font-weight: 400;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
-
-    #welcome p {
-      color: var(--text-dim);
-      font-size: 14px;
-      max-width: 400px;
-      line-height: 1.7;
-      margin-bottom: 32px;
-    }
-
-    .suggestions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      max-width: 600px;
-    }
-
-    .chip {
-      padding: 9px 16px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 13px;
-      color: var(--text-dim);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .chip:hover {
-      background: var(--gold-dim);
-      border-color: var(--gold);
-      color: var(--gold-light);
-    }
-
-    /* ── Messages ── */
-    .msg-row {
-      display: flex;
-      padding: 6px 28px;
-      animation: slideUp 0.25s ease;
-    }
-
-    .msg-row.user {
-      justify-content: flex-end;
-    }
-
-    .msg-row.bot {
-      justify-content: flex-start;
-      flex-direction: column;
-    }
-
-    .bubble {
-      max-width: 68%;
-      padding: 14px 18px;
-      border-radius: var(--radius);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .msg-row.user .bubble {
-      background: var(--user-bg);
-      border: 1px solid rgba(201, 168, 76, 0.25);
-      border-bottom-right-radius: 4px;
-      color: var(--text);
-    }
-
-    .msg-row.bot .bubble {
-      background: var(--bot-bg);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-bottom-left-radius: 4px;
-      color: var(--text);
-    }
-
-    .bot-name {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      font-weight: 500;
-    }
-
-    /* ── Agent question bubble (styled differently) ── */
-    .msg-row.agent .bubble {
-      background: linear-gradient(135deg, rgba(201, 168, 76, 0.08), rgba(201, 168, 76, 0.04));
-      border: 1px solid rgba(201, 168, 76, 0.3);
-      border-bottom-left-radius: 4px;
-      color: var(--text);
-    }
-
-    /* ── Shortlist cards ── */
-    .shortlist-wrap {
-      padding: 6px 28px;
-      animation: slideUp 0.3s ease;
-    }
-
-    .shortlist-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .shortlist-header .bot-name {
-      margin-bottom: 0;
-    }
-
-    .shortlist-summary {
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-bottom: 16px;
-      max-width: 600px;
-      line-height: 1.6;
-    }
-
-    .shortlist-cards {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-width: 700px;
-    }
-
-    .area-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px 20px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.2s;
-    }
-
-    .area-card:hover {
-      border-color: var(--gold);
-    }
-
-    .area-card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: linear-gradient(180deg, var(--gold), var(--gold-light));
-    }
-
-    .card-rank {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 28px;
-      height: 28px;
-      background: var(--gold-dim);
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--gold);
-    }
-
-    .card-area {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 6px;
-      padding-right: 36px;
-    }
-
-    .card-vibe {
-      font-size: 13px;
-      color: var(--text-dim);
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-
-    .card-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .stat-pill {
-      background: var(--surface);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .stat-pill strong {
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .card-reason {
-      font-size: 12px;
-      color: var(--gold);
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
-      margin-top: 2px;
-      line-height: 1.5;
-    }
-
-    .card-best-for {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-top: 4px;
-    }
-
-    /* ── Follow-up chips (dynamic) ── */
-    .followup-row {
-      padding: 4px 28px 8px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      animation: fadeIn 0.3s ease 0.2s both;
-    }
-
-    .followup-chip {
-      padding: 7px 14px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      font-size: 12px;
-      color: var(--text-dim);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .followup-chip:hover {
-      background: var(--gold-dim);
-      border-color: var(--gold);
-      color: var(--gold-light);
-    }
-
-    /* Typing indicator */
-    .typing-bubble {
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      padding: 16px 20px;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--gold);
-      animation: bounce 1.2s infinite;
-    }
-
-    .dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    /* ── Input area ── */
-    footer {
-      position: relative;
-      z-index: 10;
-      padding: 16px 28px 20px;
-      background: rgba(10, 10, 15, 0.95);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(12px);
-    }
-
-    .input-wrap {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px 10px 10px 18px;
-      transition: border-color 0.2s;
-    }
-
-    .input-wrap:focus-within {
-      border-color: var(--gold);
-    }
-
-    #input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 300;
-      resize: none;
-      max-height: 120px;
-      min-height: 22px;
-      line-height: 1.5;
-    }
-
-    #input::placeholder {
-      color: var(--text-dim);
-    }
-
-    #send {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: opacity 0.2s, transform 0.15s;
-    }
-
-    #send:hover {
-      opacity: 0.85;
-      transform: scale(1.05);
-    }
-
-    #send:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    #send svg {
-      width: 16px;
-      height: 16px;
-      fill: #0A0A0F;
-    }
-
-    .footer-note {
-      text-align: center;
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-top: 10px;
-      letter-spacing: 0.04em;
-    }
-
-    /* ── Inline tool widgets ── */
-    .widget-wrap {
-      padding: 6px 28px;
-      animation: slideUp 0.3s ease;
-    }
-
-    .widget-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 22px;
-      max-width: 520px;
-      position: relative;
-    }
-
-    .widget-title {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-weight: 500;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .widget-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .widget-row label {
-      font-size: 13px;
-      color: var(--text-dim);
-      min-width: 130px;
-      flex-shrink: 0;
-    }
-
-    .widget-input {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      width: 160px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .widget-input:focus {
-      border-color: var(--gold);
-    }
-
-    .widget-select {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 7px 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      outline: none;
-      cursor: pointer;
-    }
-
-    .widget-btn {
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      border: none;
-      border-radius: 8px;
-      padding: 8px 18px;
-      color: #0A0A0F;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      margin-top: 4px;
-    }
-
-    .widget-btn:hover {
-      opacity: 0.85;
-    }
-
-    .widget-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 14px 0;
-    }
-
-    .widget-results {
-      display: none;
-    }
-
-    .widget-results.visible {
-      display: block;
-    }
-
-    .result-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .result-item {
-      background: var(--surface);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .result-label {
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-bottom: 3px;
-    }
-
-    .result-value {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .result-total {
-      background: var(--gold-dim);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .result-total-label {
-      font-size: 13px;
-      color: var(--gold);
-      letter-spacing: 0.04em;
-    }
-
-    .result-total-value {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--gold-light);
-    }
-
-    .rera-verdict {
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-top: 10px;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .rera-verdict.allowed {
-      background: rgba(76, 175, 80, 0.1);
-      border: 1px solid rgba(76, 175, 80, 0.3);
-      color: #81C784;
-    }
-
-    .rera-verdict.capped {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid rgba(255, 193, 7, 0.25);
-      color: #FFD54F;
-    }
-
-    .rera-verdict.illegal {
-      background: rgba(244, 67, 54, 0.1);
-      border: 1px solid rgba(244, 67, 54, 0.25);
-      color: #EF9A9A;
-    }
-
-    /* ── Animations ── */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-      }
-
-      to {
-        opacity: 1;
-      }
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes bounce {
-
-      0%,
-      60%,
-      100% {
-        transform: translateY(0);
-      }
-
-      30% {
-        transform: translateY(-6px);
-      }
-    }
-
-    @keyframes cardIn {
-      from {
-        opacity: 0;
-        transform: translateY(16px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* ── Comparison cards ── */
-    .compare-wrap {
-      padding: 6px 28px;
-      animation: slideUp 0.3s ease;
-    }
-
-    .compare-header {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-weight: 500;
-      margin-bottom: 14px;
-    }
-
-    .compare-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
-      max-width: 680px;
-    }
-
-    .compare-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .compare-card:hover {
-      border-color: var(--gold);
-      transform: translateY(-2px);
-    }
-
-    .compare-card-header {
-      background: linear-gradient(135deg, rgba(201, 168, 76, 0.12), rgba(201, 168, 76, 0.04));
-      border-bottom: 1px solid var(--border);
-      padding: 14px 16px;
-    }
-
-    .compare-area-name {
-      font-family: "Cormorant Garamond", serif;
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
-
-    .compare-area-tag {
-      font-size: 11px;
-      color: var(--gold);
-      letter-spacing: 0.06em;
-    }
-
-    .compare-rows {
-      padding: 12px 16px;
-    }
-
-    .compare-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      font-size: 13px;
-    }
-
-    .compare-row:last-child {
-      border-bottom: none;
-    }
-
-    .compare-row-label {
-      color: var(--text-dim);
-      flex: 1;
-      min-width: 0;
-    }
-
-    .compare-row-value {
-      color: var(--text);
-      font-weight: 500;
-      text-align: right;
-      max-width: 60%;
-      flex-shrink: 0;
-    }
-
-    .compare-row-value.good {
-      color: #81C784;
-    }
-
-    .compare-row-value.mid {
-      color: var(--gold);
-    }
-
-    .compare-verdict {
-      max-width: 680px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--text-dim);
-      line-height: 1.6;
-      margin: 0 28px 6px;
-      animation: slideUp 0.3s ease 0.15s both;
-    }
-
-    .compare-verdict strong {
-      color: var(--gold);
-    }
-
-    /* ── Mobile responsive ── */
-    @media (max-width: 600px) {
-      header {
-        padding: 12px 16px;
-      }
-
-      .logo-text h1 {
-        font-size: 17px;
-      }
-
-      #memory-banner {
-        max-width: 160px;
-      }
-
-      .msg-row {
-        padding: 5px 14px;
-      }
-
-      .bubble {
-        max-width: 90%;
-      }
-
-      .shortlist-wrap,
-      .compare-wrap,
-      .widget-wrap,
-      .followup-row {
-        padding: 5px 14px;
-      }
-
-      .compare-grid {
-        grid-template-columns: 1fr;
-        margin: 0 14px 12px;
-      }
-
-      .compare-verdict {
-        margin: 0 14px 6px;
-      }
-
-      footer {
-        padding: 12px 14px 16px;
-      }
-
-      #welcome h2 {
-        font-size: 22px;
-      }
-
-      .chip {
-        font-size: 12px;
-        padding: 7px 13px;
-      }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DubaiNest AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8CC80;
+    --gold-dim: rgba(201,168,76,0.15);
+    --bg: #0A0A0F;
+    --surface: #111118;
+    --surface2: #18181F;
+    --border: rgba(201,168,76,0.2);
+    --text: #F0EDE8;
+    --text-dim: rgba(240,237,232,0.5);
+    --user-bg: rgba(201,168,76,0.12);
+    --bot-bg: rgba(255,255,255,0.04);
+    --radius: 16px;
+    --green: #4CAF50;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(201,168,76,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,168,76,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px;
+    background: rgba(10,10,15,0.9);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo { display: flex; align-items: center; gap: 12px; }
+
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+  }
+
+  .logo-text h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600;
+    letter-spacing: 0.03em; color: var(--text); line-height: 1;
+  }
+
+  .logo-text span {
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  /* Session memory banner */
+  #memory-banner {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+    max-width: 420px;
+    overflow: hidden;
+    flex-wrap: nowrap;
+  }
+
+  #memory-tags {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    scrollbar-width: none;
+  }
+
+  #memory-tags::-webkit-scrollbar { display: none; }
+
+  #memory-banner.visible { display: flex; }
+
+  .memory-label {
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .memory-tag {
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    color: var(--gold-light);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  /* ── Chat area ── */
+  #chat {
+    position: relative; z-index: 1;
+    flex: 1; overflow-y: auto;
+    padding: 28px 0;
+    display: flex; flex-direction: column;
+    gap: 0; scroll-behavior: smooth;
+  }
+
+  #chat::-webkit-scrollbar { width: 4px; }
+  #chat::-webkit-scrollbar-track { background: transparent; }
+  #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ── Welcome ── */
+  #welcome {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    flex: 1; padding: 40px 20px;
+    text-align: center; animation: fadeIn 0.6s ease;
+  }
+
+  .welcome-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--gold-dim), rgba(201,168,76,0.25));
+    border: 1px solid var(--border); border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(201,168,76,0.1);
+  }
+
+  #welcome h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px; font-weight: 400;
+    margin-bottom: 10px; color: var(--text);
+  }
+
+  #welcome p {
+    color: var(--text-dim); font-size: 14px;
+    max-width: 400px; line-height: 1.7; margin-bottom: 32px;
+  }
+
+  .suggestions {
+    display: flex; flex-wrap: wrap;
+    gap: 10px; justify-content: center; max-width: 600px;
+  }
+
+  .chip {
+    padding: 9px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px; font-size: 13px;
+    color: var(--text-dim); cursor: pointer;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+
+  .chip:hover {
+    background: var(--gold-dim);
+    border-color: var(--gold); color: var(--gold-light);
+  }
+
+  /* ── Messages ── */
+  .msg-row {
+    display: flex; padding: 6px 28px;
+    animation: slideUp 0.25s ease;
+  }
+
+  .msg-row.user { justify-content: flex-end; }
+  .msg-row.bot  { justify-content: flex-start; flex-direction: column; }
+
+  .bubble {
+    max-width: 68%; padding: 14px 18px;
+    border-radius: var(--radius); font-size: 14px; line-height: 1.7;
+  }
+
+  .msg-row.user .bubble {
+    background: var(--user-bg);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-bottom-right-radius: 4px; color: var(--text);
+  }
+
+  .msg-row.bot .bubble {
+    background: var(--bot-bg);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-bottom-left-radius: 4px; color: var(--text);
+  }
+
+  .bot-name {
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 6px; font-weight: 500;
+  }
+
+  /* ── Agent question bubble (styled differently) ── */
+  .msg-row.agent .bubble {
+    background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.04));
+    border: 1px solid rgba(201,168,76,0.3);
+    border-bottom-left-radius: 4px; color: var(--text);
+  }
+
+  /* ── Shortlist cards ── */
+  .shortlist-wrap {
+    padding: 6px 28px;
+    animation: slideUp 0.3s ease;
+  }
+
+  .shortlist-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .shortlist-header .bot-name { margin-bottom: 0; }
+
+  .shortlist-summary {
+    font-size: 13px; color: var(--text-dim);
+    margin-bottom: 16px; max-width: 600px; line-height: 1.6;
+  }
+
+  .shortlist-cards {
+    display: flex; flex-direction: column; gap: 12px;
+    max-width: 700px;
+  }
+
+  .area-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px 20px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .area-card:hover { border-color: var(--gold); }
+
+  .area-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--gold), var(--gold-light));
+  }
+
+  .card-rank {
+    position: absolute; top: 16px; right: 16px;
+    width: 28px; height: 28px;
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500; color: var(--gold);
+  }
+
+  .card-area {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 600; color: var(--text);
+    margin-bottom: 6px; padding-right: 36px;
+  }
+
+  .card-vibe {
+    font-size: 13px; color: var(--text-dim);
+    margin-bottom: 12px; line-height: 1.5;
+  }
+
+  .card-stats {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; color: var(--text-dim);
+  }
+
+  .stat-pill strong { color: var(--text); font-weight: 500; }
+
+  .card-reason {
+    font-size: 12px; color: var(--gold);
+    border-top: 1px solid var(--border); padding-top: 10px;
+    margin-top: 2px; line-height: 1.5;
+  }
+
+  .card-best-for {
+    font-size: 12px; color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── Follow-up chips (dynamic) ── */
+  .followup-row {
+    padding: 4px 28px 8px;
+    display: flex; flex-wrap: wrap; gap: 8px;
+    animation: fadeIn 0.3s ease 0.2s both;
+  }
+
+  .followup-chip {
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px; font-size: 12px;
+    color: var(--text-dim); cursor: pointer;
+    transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+
+  .followup-chip:hover {
+    background: var(--gold-dim);
+    border-color: var(--gold); color: var(--gold-light);
+  }
+
+  /* Typing indicator */
+  .typing-bubble {
+    display: flex; gap: 5px;
+    align-items: center; padding: 16px 20px;
+  }
+
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold); animation: bounce 1.2s infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ── Input area ── */
+  footer {
+    position: relative; z-index: 10;
+    padding: 16px 28px 20px;
+    background: rgba(10,10,15,0.95);
+    border-top: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+
+  .input-wrap {
+    display: flex; align-items: flex-end; gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 10px 10px 10px 18px;
+    transition: border-color 0.2s;
+  }
+
+  .input-wrap:focus-within { border-color: var(--gold); }
+
+  #input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 300;
+    resize: none; max-height: 120px; min-height: 22px; line-height: 1.5;
+  }
+
+  #input::placeholder { color: var(--text-dim); }
+
+  #send {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: opacity 0.2s, transform 0.15s;
+  }
+
+  #send:hover { opacity: 0.85; transform: scale(1.05); }
+  #send:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  #send svg { width: 16px; height: 16px; fill: #0A0A0F; }
+
+  .footer-note {
+    text-align: center; font-size: 11px;
+    color: var(--text-dim); margin-top: 10px; letter-spacing: 0.04em;
+  }
+
+  /* ── Inline tool widgets ── */
+  .widget-wrap {
+    padding: 6px 28px;
+    animation: slideUp 0.3s ease;
+  }
+
+  .widget-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 22px;
+    max-width: 520px;
+    position: relative;
+  }
+
+  .widget-title {
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 500; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .widget-row {
+    display: flex; align-items: center;
+    gap: 10px; margin-bottom: 12px;
+  }
+
+  .widget-row label {
+    font-size: 13px; color: var(--text-dim);
+    min-width: 130px; flex-shrink: 0;
+  }
+
+  .widget-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    width: 160px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .widget-input:focus { border-color: var(--gold); }
+
+  .widget-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .widget-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border: none; border-radius: 8px;
+    padding: 8px 18px;
+    color: #0A0A0F;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+
+  .widget-btn:hover { opacity: 0.85; }
+
+  .widget-divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+
+  .widget-results { display: none; }
+  .widget-results.visible { display: block; }
+
+  .result-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 10px;
+  }
+
+  .result-item {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px; padding: 10px 12px;
+  }
+
+  .result-label {
+    font-size: 11px; color: var(--text-dim);
+    margin-bottom: 3px;
+  }
+
+  .result-value {
+    font-size: 15px; font-weight: 500; color: var(--text);
+  }
+
+  .result-total {
+    background: var(--gold-dim);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .result-total-label {
+    font-size: 13px; color: var(--gold);
+    letter-spacing: 0.04em;
+  }
+
+  .result-total-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 600; color: var(--gold-light);
+  }
+
+  .rera-verdict {
+    border-radius: 10px; padding: 12px 16px;
+    margin-top: 10px; font-size: 13px; line-height: 1.6;
+  }
+
+  .rera-verdict.allowed {
+    background: rgba(76,175,80,0.1);
+    border: 1px solid rgba(76,175,80,0.3);
+    color: #81C784;
+  }
+
+  .rera-verdict.capped {
+    background: rgba(255,193,7,0.1);
+    border: 1px solid rgba(255,193,7,0.25);
+    color: #FFD54F;
+  }
+
+  .rera-verdict.illegal {
+    background: rgba(244,67,54,0.1);
+    border: 1px solid rgba(244,67,54,0.25);
+    color: #EF9A9A;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+  @keyframes slideUp  { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
+  @keyframes bounce   { 0%,60%,100% { transform:translateY(0);} 30% { transform:translateY(-6px);} }
+  @keyframes cardIn   { from { opacity:0; transform:translateY(16px);} to { opacity:1; transform:translateY(0);} }
+
+  /* ── Comparison cards ── */
+  .compare-wrap {
+    padding: 6px 28px;
+    animation: slideUp 0.3s ease;
+  }
+
+  .compare-header {
+    font-size: 11px; color: var(--gold);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 500; margin-bottom: 14px;
+  }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+    max-width: 680px;
+  }
+
+  .compare-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .compare-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+
+  .compare-card-header {
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04));
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+
+  .compare-area-name {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 2px;
+  }
+
+  .compare-area-tag { font-size: 11px; color: var(--gold); letter-spacing: 0.06em; }
+
+  .compare-rows { padding: 12px 16px; }
+
+  .compare-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px;
+  }
+
+  .compare-row:last-child { border-bottom: none; }
+  .compare-row-label { color: var(--text-dim); flex: 1; min-width: 0; }
+  .compare-row-value { color: var(--text); font-weight: 500; text-align: right; max-width: 60%; flex-shrink: 0; }
+  .compare-row-value.good { color: #81C784; }
+  .compare-row-value.mid  { color: var(--gold); }
+
+  .compare-verdict {
+    max-width: 680px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    font-size: 13px; color: var(--text-dim); line-height: 1.6;
+    margin: 0 28px 6px;
+    animation: slideUp 0.3s ease 0.15s both;
+  }
+
+  .compare-verdict strong { color: var(--gold); }
+
+  /* ── Mobile responsive ── */
+  @media (max-width: 600px) {
+    header { padding: 12px 16px; }
+    .logo-text h1 { font-size: 17px; }
+    #memory-banner { max-width: 160px; }
+    .msg-row { padding: 5px 14px; }
+    .bubble { max-width: 90%; }
+    .shortlist-wrap, .compare-wrap, .widget-wrap, .followup-row { padding: 5px 14px; }
+    .compare-grid { grid-template-columns: 1fr; margin: 0 14px 12px; }
+    .compare-verdict { margin: 0 14px 6px; }
+    footer { padding: 12px 14px 16px; }
+    #welcome h2 { font-size: 22px; }
+    .chip { font-size: 12px; padding: 7px 13px; }
+  }
+</style>
 </head>
-
 <body>
 
-  <!-- ── Header ── -->
-  <header>
-    <div class="logo">
-      <div class="logo-icon">🏙️</div>
-      <div class="logo-text">
-        <h1>DubaiNest AI</h1>
-        <span>Real Estate Assistant · v2</span>
-      </div>
-    </div>
-
-    <div class="header-right">
-      <!-- Session memory banner -->
-      <div id="memory-banner">
-        <span class="memory-label">Session</span>
-        <span id="memory-tags"></span>
-      </div>
-      <div class="status-pill">
-        <div class="status-dot"></div>
-        Live
-      </div>
-    </div>
-  </header>
-
-  <!-- ── Chat ── -->
-  <div id="chat">
-    <div id="welcome">
-      <div class="welcome-icon">🏙️</div>
-      <h2>Ask me anything about Dubai real estate</h2>
-      <p>Rental prices, area comparisons, RERA tenant rights, move-in costs — or let me build you a personalised area
-        shortlist.</p>
-      <div class="suggestions">
-        <div class="chip" onclick="sendChip(this)">Find me the best area to live</div>
-        <div class="chip" onclick="sendChip(this)">Average rent for 1BR in JVC?</div>
-        <div class="chip" onclick="sendChip(this)">Calculate move-in cost</div>
-        <div class="chip" onclick="sendChip(this)">Check rent increase RERA</div>
-        <div class="chip" onclick="sendChip(this)">Best areas with metro access?</div>
-        <div class="chip" onclick="sendChip(this)">Compare JVC vs Dubai Marina</div>
-      </div>
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏙️</div>
+    <div class="logo-text">
+      <h1>DubaiNest AI</h1>
+      <span>Real Estate Assistant · v2</span>
     </div>
   </div>
 
-  <!-- ── Input ── -->
-  <footer>
-    <div class="input-wrap">
-      <textarea id="input" rows="1"
-        placeholder="Ask about rentals, areas, RERA rules, or say 'find me an area'…"></textarea>
-      <button id="send" onclick="sendMessage()" title="Send">
-        <svg viewBox="0 0 24 24">
-          <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />
-        </svg>
-      </button>
+  <div class="header-right">
+    <!-- Session memory banner -->
+    <div id="memory-banner">
+      <span class="memory-label">Session</span>
+      <span id="memory-tags"></span>
     </div>
-    <div class="footer-note">Nipun Kavinda · Nexora Studio · DubaiNest AI v2</div>
-  </footer>
-
-  <!-- ── Area Comparison Template ── -->
-  <template id="tmpl-compare">
-    <div class="compare-wrap">
-      <div class="compare-header">⚡ Area Comparison</div>
-      <div class="compare-grid" id="cmp-grid"></div>
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      Live
     </div>
-    <div class="compare-verdict" id="cmp-verdict"></div>
-  </template>
+  </div>
+</header>
 
-  <!-- ── Move-in Cost Calculator Widget Template ── -->
-  <template id="tmpl-movein">
-    <div class="widget-wrap">
-      <div class="widget-card">
-        <div class="widget-title">🧮 Move-in Cost Calculator</div>
+<!-- ── Chat ── -->
+<div id="chat">
+  <div id="welcome">
+    <div class="welcome-icon">🏙️</div>
+    <h2>Ask me anything about Dubai real estate</h2>
+    <p>Rental prices, area comparisons, RERA tenant rights, move-in costs — or let me build you a personalised area shortlist.</p>
+    <div class="suggestions">
+      <div class="chip" onclick="sendChip(this)">Find me the best area to live</div>
+      <div class="chip" onclick="sendChip(this)">Average rent for 1BR in JVC?</div>
+      <div class="chip" onclick="sendChip(this)">Calculate move-in cost</div>
+      <div class="chip" onclick="sendChip(this)">Check rent increase RERA</div>
+      <div class="chip" onclick="sendChip(this)">Best areas with metro access?</div>
+      <div class="chip" onclick="sendChip(this)">Compare JVC vs Dubai Marina</div>
+    </div>
+  </div>
+</div>
 
-        <div class="widget-row">
-          <label>Annual rent (AED)</label>
-          <input class="widget-input" type="number" id="wi-rent" placeholder="e.g. 90000" min="10000" max="1000000"
-            step="1000" />
-        </div>
+<!-- ── Input ── -->
+<footer>
+  <div class="input-wrap">
+    <textarea id="input" rows="1" placeholder="Ask about rentals, areas, RERA rules, or say 'find me an area'…"></textarea>
+    <button id="send" onclick="sendMessage()" title="Send">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+    </button>
+  </div>
+  <div class="footer-note">Nipun Kavinda · Nexora Studio · DubaiNest AI v2</div>
+</footer>
 
-        <div class="widget-row">
-          <label>Cheques</label>
-          <select class="widget-select" id="wi-cheques">
-            <option value="1">1 cheque</option>
-            <option value="2">2 cheques</option>
-            <option value="4" selected>4 cheques</option>
-            <option value="6">6 cheques</option>
-            <option value="12">12 cheques</option>
-          </select>
-        </div>
+<!-- ── Area Comparison Template ── -->
+<template id="tmpl-compare">
+  <div class="compare-wrap">
+    <div class="compare-header">⚡ Area Comparison</div>
+    <div class="compare-grid" id="cmp-grid"></div>
+  </div>
+  <div class="compare-verdict" id="cmp-verdict"></div>
+</template>
 
-        <div class="widget-row">
-          <label>Include chiller?</label>
-          <select class="widget-select" id="wi-chiller">
-            <option value="no" selected>No (DEWA only)</option>
-            <option value="yes">Yes (chiller included)</option>
-          </select>
-        </div>
+<!-- ── Move-in Cost Calculator Widget Template ── -->
+<template id="tmpl-movein">
+  <div class="widget-wrap">
+    <div class="widget-card">
+      <div class="widget-title">🧮 Move-in Cost Calculator</div>
 
-        <button class="widget-btn" onclick="calcMovein(this)">Calculate</button>
+      <div class="widget-row">
+        <label>Annual rent (AED)</label>
+        <input class="widget-input" type="number" id="wi-rent" placeholder="e.g. 90000" min="10000" max="1000000" step="1000"/>
+      </div>
 
-        <hr class="widget-divider" />
+      <div class="widget-row">
+        <label>Cheques</label>
+        <select class="widget-select" id="wi-cheques">
+          <option value="1">1 cheque</option>
+          <option value="2">2 cheques</option>
+          <option value="4" selected>4 cheques</option>
+          <option value="6">6 cheques</option>
+          <option value="12">12 cheques</option>
+        </select>
+      </div>
 
-        <div class="widget-results" id="wi-results">
-          <div class="result-grid">
-            <div class="result-item">
-              <div class="result-label">Security deposit</div>
-              <div class="result-value" id="wi-deposit">—</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Agency fee (5%)</div>
-              <div class="result-value" id="wi-agency">—</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Ejari registration</div>
-              <div class="result-value">AED 220</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">DEWA deposit</div>
-              <div class="result-value" id="wi-dewa">—</div>
-            </div>
-            <div class="result-item" id="wi-chiller-row" style="display:none">
-              <div class="result-label">Chiller deposit</div>
-              <div class="result-value" id="wi-chiller-val">—</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">First cheque</div>
-              <div class="result-value" id="wi-firstcheque">—</div>
-            </div>
+      <div class="widget-row">
+        <label>Include chiller?</label>
+        <select class="widget-select" id="wi-chiller">
+          <option value="no" selected>No (DEWA only)</option>
+          <option value="yes">Yes (chiller included)</option>
+        </select>
+      </div>
+
+      <button class="widget-btn" onclick="calcMovein(this)">Calculate</button>
+
+      <hr class="widget-divider"/>
+
+      <div class="widget-results" id="wi-results">
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">Security deposit</div>
+            <div class="result-value" id="wi-deposit">—</div>
           </div>
-          <div class="result-total">
-            <div class="result-total-label">Total move-in cost</div>
-            <div class="result-total-value" id="wi-total">—</div>
+          <div class="result-item">
+            <div class="result-label">Agency fee (5%)</div>
+            <div class="result-value" id="wi-agency">—</div>
           </div>
+          <div class="result-item">
+            <div class="result-label">Ejari registration</div>
+            <div class="result-value">AED 220</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">DEWA deposit</div>
+            <div class="result-value" id="wi-dewa">—</div>
+          </div>
+          <div class="result-item" id="wi-chiller-row" style="display:none">
+            <div class="result-label">Chiller deposit</div>
+            <div class="result-value" id="wi-chiller-val">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">First cheque</div>
+            <div class="result-value" id="wi-firstcheque">—</div>
+          </div>
+        </div>
+        <div class="result-total">
+          <div class="result-total-label">Total move-in cost</div>
+          <div class="result-total-value" id="wi-total">—</div>
         </div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
 
-  <!-- ── RERA Rent Checker Widget Template ── -->
-  <template id="tmpl-rera">
-    <div class="widget-wrap">
-      <div class="widget-card">
-        <div class="widget-title">📋 RERA Rent Increase Checker</div>
+<!-- ── RERA Rent Checker Widget Template ── -->
+<template id="tmpl-rera">
+  <div class="widget-wrap">
+    <div class="widget-card">
+      <div class="widget-title">📋 RERA Rent Increase Checker</div>
 
-        <div class="widget-row">
-          <label>Current annual rent (AED)</label>
-          <input class="widget-input" type="number" id="ri-current" placeholder="e.g. 80000" min="5000" step="1000" />
-        </div>
+      <div class="widget-row">
+        <label>Current annual rent (AED)</label>
+        <input class="widget-input" type="number" id="ri-current" placeholder="e.g. 80000" min="5000" step="1000"/>
+      </div>
 
-        <div class="widget-row">
-          <label>Area average rent (AED)</label>
-          <input class="widget-input" type="number" id="ri-market" placeholder="e.g. 100000" min="5000" step="1000" />
-        </div>
+      <div class="widget-row">
+        <label>Area average rent (AED)</label>
+        <input class="widget-input" type="number" id="ri-market" placeholder="e.g. 100000" min="5000" step="1000"/>
+      </div>
 
-        <div class="widget-row">
-          <label>Proposed new rent (AED)</label>
-          <input class="widget-input" type="number" id="ri-proposed" placeholder="e.g. 95000" min="5000" step="1000" />
-        </div>
+      <div class="widget-row">
+        <label>Proposed new rent (AED)</label>
+        <input class="widget-input" type="number" id="ri-proposed" placeholder="e.g. 95000" min="5000" step="1000"/>
+      </div>
 
-        <button class="widget-btn" onclick="checkRera(this)">Check RERA rules</button>
+      <button class="widget-btn" onclick="checkRera(this)">Check RERA rules</button>
 
-        <hr class="widget-divider" />
+      <hr class="widget-divider"/>
 
-        <div class="widget-results" id="ri-results">
-          <div class="result-grid">
-            <div class="result-item">
-              <div class="result-label">% below market avg</div>
-              <div class="result-value" id="ri-pctbelow">—</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Max legal increase</div>
-              <div class="result-value" id="ri-maxpct">—</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Max legal new rent</div>
-              <div class="result-value" id="ri-maxrent">—</div>
-            </div>
-            <div class="result-item">
-              <div class="result-label">Proposed increase</div>
-              <div class="result-value" id="ri-propinc">—</div>
-            </div>
+      <div class="widget-results" id="ri-results">
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">% below market avg</div>
+            <div class="result-value" id="ri-pctbelow">—</div>
           </div>
-          <div class="rera-verdict" id="ri-verdict"></div>
+          <div class="result-item">
+            <div class="result-label">Max legal increase</div>
+            <div class="result-value" id="ri-maxpct">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Max legal new rent</div>
+            <div class="result-value" id="ri-maxrent">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">Proposed increase</div>
+            <div class="result-value" id="ri-propinc">—</div>
+          </div>
         </div>
+        <div class="rera-verdict" id="ri-verdict"></div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
 
-  <script>
-    const chat = document.getElementById('chat');
-    const welcome = document.getElementById('welcome');
-    const input = document.getElementById('input');
-    const sendBtn = document.getElementById('send');
-    const API_BASE = '';
+<script>
+  const chat    = document.getElementById('chat');
+  const welcome = document.getElementById('welcome');
+  const input   = document.getElementById('input');
+  const sendBtn = document.getElementById('send');
+  const API_BASE = '';
 
-    // Agent state — persisted in JS
-    let agentState = { mode: 'normal' };
+  // Agent state — persisted in JS
+  let agentState = { mode: 'normal' };
 
-    // Session memory — topics explored this session
-    let sessionMemory = [];
+  // Session memory — topics explored this session
+  let sessionMemory = [];
 
-    // ── Widget keyword detection ──────────────────────────────────
-    const MOVEIN_KEYWORDS = ['move-in cost', 'movein cost', 'move in cost', 'moving cost',
-      'how much to move', 'deposit calculator', 'calculate deposit',
-      'upfront cost', 'move-in calculator', 'calculate move'];
+  // ── Widget keyword detection ──────────────────────────────────
+  const MOVEIN_KEYWORDS = ['move-in cost', 'movein cost', 'move in cost', 'moving cost',
+    'how much to move', 'deposit calculator', 'calculate deposit',
+    'upfront cost', 'move-in calculator', 'calculate move'];
 
-    const RERA_KEYWORDS = ['rera check', 'rent increase check', 'can my landlord raise',
-      'is this rent increase legal', 'rera calculator', 'legal rent increase',
-      'max rent increase', 'rent hike', 'check rent increase', 'rera rent', 'dispute rent'];
+  const RERA_KEYWORDS = ['rera check', 'rent increase check', 'can my landlord raise',
+    'is this rent increase legal', 'rera calculator', 'legal rent increase',
+    'max rent increase', 'rent hike', 'check rent increase', 'rera rent', 'dispute rent'];
 
-    // Compare pattern: "compare X vs Y" or "X vs Y"
-    function detectCompare(q) {
-      const lower = q.toLowerCase();
-      const vsMatch = lower.match(/compare\s+(.+?)\s+(?:vs\.?|versus|and|or)\s+(.+)/);
-      const shortMatch = lower.match(/^(.+?)\s+(?:vs\.?|versus|and)\s+(.+)$/);
-      const m = vsMatch || shortMatch;
-      if (!m) return null;
-      const clean = s => s.trim().replace(/[?!.,]+$/, '').replace(/^(the|in|at)\s+/i, '');
-      return { area1: clean(m[1]), area2: clean(m[2]) };
-    }
+  // Compare pattern: "compare X vs Y" or "X vs Y"
+  function detectCompare(q) {
+    const lower = q.toLowerCase();
+    const vsMatch    = lower.match(/compare\s+(.+?)\s+(?:vs\.?|versus|and|or)\s+(.+)/);
+    const shortMatch = lower.match(/^(.+?)\s+(?:vs\.?|versus|and)\s+(.+)$/);
+    const m = vsMatch || shortMatch;
+    if (!m) return null;
+    const clean = s => s.trim().replace(/[?!.,]+$/, '').replace(/^(the|in|at)\s+/i, '');
+    return { area1: clean(m[1]), area2: clean(m[2]) };
+  }
 
-    function detectWidget(q) {
-      const lower = q.toLowerCase();
-      if (MOVEIN_KEYWORDS.some(k => lower.includes(k))) return 'movein';
-      if (RERA_KEYWORDS.some(k => lower.includes(k))) return 'rera';
-      return null;
-    }
+  function detectWidget(q) {
+    const lower = q.toLowerCase();
+    if (MOVEIN_KEYWORDS.some(k => lower.includes(k))) return 'movein';
+    if (RERA_KEYWORDS.some(k => lower.includes(k))) return 'rera';
+    return null;
+  }
 
-    // ── Render comparison cards (from RAG answer text) ────────────
-    function renderCompareCards(area1, area2, ragAnswer) {
-      removeWelcome();
-      const tmpl = document.getElementById('tmpl-compare');
-      const node = tmpl.content.cloneNode(true);
+  // ── Render comparison cards (from RAG answer text) ────────────
+  function renderCompareCards(area1, area2, ragAnswer) {
+    removeWelcome();
+    const tmpl = document.getElementById('tmpl-compare');
+    const node = tmpl.content.cloneNode(true);
 
-      // Parse RAG answer into per-area data using simple heuristics
-      // The RAG returns text — we display it structured by area
-      const grid = node.querySelector('#cmp-grid');
+    // Parse RAG answer into per-area data using simple heuristics
+    // The RAG returns text — we display it structured by area
+    const grid = node.querySelector('#cmp-grid');
 
-      console.log('RAG RAW:', JSON.stringify(ragAnswer));
-      [area1, area2].forEach((area, i) => {
-        const card = document.createElement('div');
-        card.className = 'compare-card';
-        card.style.animation = `cardIn 0.35s ease ${i * 0.1}s both`;
+    [area1, area2].forEach((area, i) => {
+      const card = document.createElement('div');
+      card.className = 'compare-card';
+      card.style.animation = `cardIn 0.35s ease ${i * 0.1}s both`;
 
-        // Split RAG answer into sections — try to find area-specific block first
-        const allLines = ragAnswer.split('\n');
-        let lines = [];
-        // Find lines that mention this area specifically
-        const areaLines = allLines.filter(l => l.toLowerCase().includes(area.toLowerCase().split(' ')[0]));
-        if (areaLines.length >= 2) {
-          lines = areaLines.slice(0, 5);
-        } else {
-          // Fall back: split the full answer in half, each card gets one half
-          const half = Math.ceil(allLines.length / 2);
-          const chunk = i === 0 ? allLines.slice(0, half) : allLines.slice(half);
-          lines = chunk.filter(l => l.trim().length > 5).slice(0, 5);
-        }
+      // Split RAG answer into sections — try to find area-specific block first
+      const allLines = ragAnswer.split('\n');
+      let lines = [];
+      // Find lines that mention this area specifically
+      const areaLines = allLines.filter(l => l.toLowerCase().includes(area.toLowerCase().split(' ')[0]));
+      if (areaLines.length >= 2) {
+        lines = areaLines.slice(0, 5);
+      } else {
+        // Fall back: split the full answer in half, each card gets one half
+        const half = Math.ceil(allLines.length / 2);
+        const chunk = i === 0 ? allLines.slice(0, half) : allLines.slice(half);
+        lines = chunk.filter(l => l.trim().length > 5).slice(0, 5);
+      }
 
-        card.innerHTML = `
+      card.innerHTML = `
         <div class="compare-card-header">
           <div class="compare-area-name">${capitalise(area)}</div>
           <div class="compare-area-tag">Dubai, UAE</div>
@@ -1241,305 +895,309 @@
         <div class="compare-rows" id="rows-${i}"></div>
       `;
 
-        // Add rows from RAG lines — show as key/value pairs
-        const rowsEl = card.querySelector(`#rows-${i}`);
+      // Add rows from RAG lines
+      const rowsEl = card.querySelector(`#rows-${i}`);
 
-        // Strip markdown bold (**text**) and skip "not available" lines
-        const stripMd = s => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
-        const skipLine = s => /not available|knowledge base|dubailand|licensed agent/i.test(s);
+      // Helpers
+      const stripMd   = s => s.replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').trim();
+      const isBadLine = s => /not (available|provided)|in the context|knowledge base|dubailand|licensed agent/i.test(s);
 
-        // Strip area name prefix (e.g. "- JVC:" or "JVC -") from start of lines
-        const stripAreaPrefix = s => s.replace(new RegExp('^[-\\s]*' + area.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[:\\s-]*', 'i'), '').trim();
+      // Clean each line: strip bullet + area-name prefix entirely
+      const cleanLines = lines.map(raw => {
+        let s = raw.trim();
+        s = s.replace(/^[-•*]+\s*/, '');          // strip leading bullet
+        s = stripMd(s);                             // strip **bold**
+        // Remove "AreaName:" or "AreaName -" prefix (case-insensitive)
+        const areaEsc = area.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        s = s.replace(new RegExp('^' + areaEsc + '\\s*[:|-]\\s*', 'i'), '');
+        return s.trim();
+      }).filter(s => s.length > 5 && !isBadLine(s));
 
-        const validLines = lines
-          .map(l => stripMd(stripAreaPrefix(l.replace(/^[-•*]\s*/, '').trim())))
-          .filter(l => l.length > 5 && !skipLine(l));
-
-        if (validLines.length > 0) {
-          validLines.forEach(clean => {
-            const row = document.createElement('div');
-            row.className = 'compare-row';
-            const colon = clean.indexOf(':');
-            if (colon > 0 && colon < 45) {
-              const label = clean.slice(0, colon).trim();
-              const val = clean.slice(colon + 1).trim();
-              if (label && val && !skipLine(val)) {
-                row.innerHTML = `<span class="compare-row-label">${label}</span><span class="compare-row-value">${val}</span>`;
-              } else if (val && !skipLine(val)) {
-                row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px;max-width:100%">${val}</span>`;
-              }
-            } else {
-              row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px;max-width:100%">${clean}</span>`;
+      if (cleanLines.length > 0) {
+        cleanLines.forEach(clean => {
+          const row = document.createElement('div');
+          row.className = 'compare-row';
+          // Split on colon: "Metro access: Yes" → label | value
+          const colon = clean.indexOf(':');
+          if (colon > 2 && colon < 40) {
+            const lbl = clean.slice(0, colon).trim();
+            const val = clean.slice(colon + 1).trim();
+            if (lbl && val && !isBadLine(val)) {
+              row.innerHTML = `<span class="compare-row-label">${lbl}</span><span class="compare-row-value">${val}</span>`;
             }
-            if (row.innerHTML) rowsEl.appendChild(row);
-          });
-        } else {
-          // Fallback: show a "limited data" note instead of garbage
-          rowsEl.innerHTML = `
-          <div class="compare-row"><span class="compare-row-label" style="color:var(--text-dim);font-size:12px;font-style:italic">
-            Limited data in knowledge base for this area. Try asking directly: "rent in ${area}"
+          }
+          // No colon — show as full-width text row
+          if (!row.innerHTML) {
+            row.innerHTML = `<span class="compare-row-label" style="color:var(--text);max-width:100%">${clean}</span>`;
+          }
+          rowsEl.appendChild(row);
+        });
+      } else {
+        rowsEl.innerHTML = `<div class="compare-row">
+          <span style="color:var(--text-dim);font-size:12px;font-style:italic">
+            No data for this area yet. Try: "rent in ${area}"
           </span></div>`;
-        }
-
-        grid.appendChild(card);
-        addMemory(capitalise(area));
-      });
-
-      chat.appendChild(node);
-
-      // Verdict — bottom summary strip
-      const verdict = document.getElementById('cmp-verdict');
-      if (verdict) {
-        const stripMd2 = s => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
-        const summaryLine = ragAnswer.split('\n').find(l =>
-          l.length > 40 && !l.startsWith('-') && !l.startsWith('•') &&
-          !/not available|knowledge base|dubailand|licensed agent/i.test(l)
-        ) || '';
-        verdict.innerHTML = summaryLine
-          ? `<strong>Summary:</strong> ${stripMd2(summaryLine)}`
-          : `<strong>Tip:</strong> Use the shortlist agent ("find me the best area") for a personalised match based on your budget and lifestyle.`;
       }
 
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function capitalise(str) {
-      return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    }
-
-    // ── Render move-in widget ─────────────────────────────────────
-    function renderMoveinWidget() {
-      removeWelcome();
-      const tmpl = document.getElementById('tmpl-movein');
-      const node = tmpl.content.cloneNode(true);
-      chat.appendChild(node);
-      chat.scrollTop = chat.scrollHeight;
-      addMemory('Move-in');
-    }
-
-    // ── Render RERA widget ────────────────────────────────────────
-    function renderReraWidget() {
-      removeWelcome();
-      const tmpl = document.getElementById('tmpl-rera');
-      const node = tmpl.content.cloneNode(true);
-      chat.appendChild(node);
-      chat.scrollTop = chat.scrollHeight;
-      addMemory('RERA');
-    }
-
-    // ── Move-in calculator logic ──────────────────────────────────
-    function calcMovein(btn) {
-      const wrap = btn.closest('.widget-card');
-      const rent = parseFloat(wrap.querySelector('#wi-rent').value);
-      const cheqs = parseInt(wrap.querySelector('#wi-cheques').value);
-      const chiller = wrap.querySelector('#wi-chiller').value === 'yes';
-
-      if (!rent || rent < 10000) {
-        wrap.querySelector('#wi-rent').style.borderColor = 'rgba(244,67,54,0.6)';
-        return;
-      }
-      wrap.querySelector('#wi-rent').style.borderColor = '';
-
-      const deposit = rent * 0.05;
-      const agency = rent * 0.05;
-      const ejari = 220;
-      const dewa = rent > 150000 ? 4000 : 2000;
-      const chillerDep = chiller ? 1500 : 0;
-      const firstCheq = Math.round(rent / cheqs);
-      const total = deposit + agency + ejari + dewa + chillerDep + firstCheq;
-
-      const fmt = n => 'AED ' + Math.round(n).toLocaleString();
-
-      wrap.querySelector('#wi-deposit').textContent = fmt(deposit);
-      wrap.querySelector('#wi-agency').textContent = fmt(agency);
-      wrap.querySelector('#wi-dewa').textContent = fmt(dewa);
-      wrap.querySelector('#wi-firstcheque').textContent = fmt(firstCheq);
-      wrap.querySelector('#wi-total').textContent = fmt(total);
-
-      const chillerRow = wrap.querySelector('#wi-chiller-row');
-      if (chiller) {
-        chillerRow.style.display = 'block';
-        wrap.querySelector('#wi-chiller-val').textContent = fmt(chillerDep);
-      } else {
-        chillerRow.style.display = 'none';
-      }
-
-      wrap.querySelector('#wi-results').classList.add('visible');
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    // ── RERA checker logic ────────────────────────────────────────
-    function reraMaxIncrease(pctBelow) {
-      if (pctBelow < 10) return 0;
-      if (pctBelow < 20) return 5;
-      if (pctBelow < 30) return 10;
-      if (pctBelow < 40) return 15;
-      return 20;
-    }
-
-    function checkRera(btn) {
-      const wrap = btn.closest('.widget-card');
-      const current = parseFloat(wrap.querySelector('#ri-current').value);
-      const market = parseFloat(wrap.querySelector('#ri-market').value);
-      const proposed = parseFloat(wrap.querySelector('#ri-proposed').value);
-
-      const inputs = [wrap.querySelector('#ri-current'), wrap.querySelector('#ri-market'), wrap.querySelector('#ri-proposed')];
-      let valid = true;
-      inputs.forEach(inp => {
-        if (!inp.value || parseFloat(inp.value) < 5000) {
-          inp.style.borderColor = 'rgba(244,67,54,0.6)'; valid = false;
-        } else { inp.style.borderColor = ''; }
-      });
-      if (!valid) return;
-
-      const pctBelow = ((market - current) / market) * 100;
-      const maxInc = reraMaxIncrease(pctBelow);
-      const maxNewRent = Math.round(current * (1 + maxInc / 100));
-      const propInc = ((proposed - current) / current) * 100;
-      const fmt = n => 'AED ' + Math.round(n).toLocaleString();
-
-      wrap.querySelector('#ri-pctbelow').textContent = pctBelow > 0 ? pctBelow.toFixed(1) + '% below' : 'At or above market';
-      wrap.querySelector('#ri-maxpct').textContent = maxInc + '%';
-      wrap.querySelector('#ri-maxrent').textContent = fmt(maxNewRent);
-      wrap.querySelector('#ri-propinc').textContent = propInc.toFixed(1) + '%';
-
-      const verdict = wrap.querySelector('#ri-verdict');
-      verdict.className = 'rera-verdict';
-
-      if (proposed <= current) {
-        verdict.className += ' allowed';
-        verdict.textContent = '✔ No increase — fully compliant with RERA rules.';
-      } else if (proposed <= maxNewRent) {
-        verdict.className += ' allowed';
-        verdict.textContent = `✔ ${fmt(proposed)} is within the RERA-allowed max of ${fmt(maxNewRent)}. Your landlord can legally proceed.`;
-      } else if (maxInc === 0) {
-        verdict.className += ' illegal';
-        verdict.textContent = `✘ Your rent is within 10% of market — RERA permits no increase. The proposed ${fmt(proposed - current)} rise is not legally enforceable.`;
-      } else {
-        verdict.className += ' illegal';
-        verdict.textContent = `✘ Proposed rent exceeds the RERA cap. Max allowed: ${fmt(maxNewRent)} (${maxInc}% increase). You can dispute this at the RDSC.`;
-      }
-
-      wrap.querySelector('#ri-results').classList.add('visible');
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    // ── Auto-resize textarea ──────────────────────────────────────
-    input.addEventListener('input', () => {
-      input.style.height = 'auto';
-      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+      grid.appendChild(card);
+      addMemory(capitalise(area));
     });
 
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
+    chat.appendChild(node);
+
+    // Verdict — bottom summary strip
+    const verdict = document.getElementById('cmp-verdict');
+    if (verdict) {
+      const stripMd2 = s => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
+      const summaryLine = ragAnswer.split('\n').find(l =>
+        l.length > 40 && !l.startsWith('-') && !l.startsWith('•') &&
+        !/not (available|provided)|in the context|knowledge base|dubailand|licensed agent/i.test(l)
+      ) || '';
+      verdict.innerHTML = summaryLine
+        ? `<strong>Summary:</strong> ${stripMd2(summaryLine)}`
+        : `<strong>Tip:</strong> Use the shortlist agent ("find me the best area") for a personalised match based on your budget and lifestyle.`;
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function capitalise(str) {
+    return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  // ── Render move-in widget ─────────────────────────────────────
+  function renderMoveinWidget() {
+    removeWelcome();
+    const tmpl = document.getElementById('tmpl-movein');
+    const node = tmpl.content.cloneNode(true);
+    chat.appendChild(node);
+    chat.scrollTop = chat.scrollHeight;
+    addMemory('Move-in');
+  }
+
+  // ── Render RERA widget ────────────────────────────────────────
+  function renderReraWidget() {
+    removeWelcome();
+    const tmpl = document.getElementById('tmpl-rera');
+    const node = tmpl.content.cloneNode(true);
+    chat.appendChild(node);
+    chat.scrollTop = chat.scrollHeight;
+    addMemory('RERA');
+  }
+
+  // ── Move-in calculator logic ──────────────────────────────────
+  function calcMovein(btn) {
+    const wrap  = btn.closest('.widget-card');
+    const rent  = parseFloat(wrap.querySelector('#wi-rent').value);
+    const cheqs = parseInt(wrap.querySelector('#wi-cheques').value);
+    const chiller = wrap.querySelector('#wi-chiller').value === 'yes';
+
+    if (!rent || rent < 10000) {
+      wrap.querySelector('#wi-rent').style.borderColor = 'rgba(244,67,54,0.6)';
+      return;
+    }
+    wrap.querySelector('#wi-rent').style.borderColor = '';
+
+    const deposit    = rent * 0.05;
+    const agency     = rent * 0.05;
+    const ejari      = 220;
+    const dewa       = rent > 150000 ? 4000 : 2000;
+    const chillerDep = chiller ? 1500 : 0;
+    const firstCheq  = Math.round(rent / cheqs);
+    const total      = deposit + agency + ejari + dewa + chillerDep + firstCheq;
+
+    const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+
+    wrap.querySelector('#wi-deposit').textContent     = fmt(deposit);
+    wrap.querySelector('#wi-agency').textContent      = fmt(agency);
+    wrap.querySelector('#wi-dewa').textContent        = fmt(dewa);
+    wrap.querySelector('#wi-firstcheque').textContent = fmt(firstCheq);
+    wrap.querySelector('#wi-total').textContent       = fmt(total);
+
+    const chillerRow = wrap.querySelector('#wi-chiller-row');
+    if (chiller) {
+      chillerRow.style.display = 'block';
+      wrap.querySelector('#wi-chiller-val').textContent = fmt(chillerDep);
+    } else {
+      chillerRow.style.display = 'none';
+    }
+
+    wrap.querySelector('#wi-results').classList.add('visible');
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── RERA checker logic ────────────────────────────────────────
+  function reraMaxIncrease(pctBelow) {
+    if (pctBelow < 10) return 0;
+    if (pctBelow < 20) return 5;
+    if (pctBelow < 30) return 10;
+    if (pctBelow < 40) return 15;
+    return 20;
+  }
+
+  function checkRera(btn) {
+    const wrap     = btn.closest('.widget-card');
+    const current  = parseFloat(wrap.querySelector('#ri-current').value);
+    const market   = parseFloat(wrap.querySelector('#ri-market').value);
+    const proposed = parseFloat(wrap.querySelector('#ri-proposed').value);
+
+    const inputs = [wrap.querySelector('#ri-current'), wrap.querySelector('#ri-market'), wrap.querySelector('#ri-proposed')];
+    let valid = true;
+    inputs.forEach(inp => {
+      if (!inp.value || parseFloat(inp.value) < 5000) {
+        inp.style.borderColor = 'rgba(244,67,54,0.6)'; valid = false;
+      } else { inp.style.borderColor = ''; }
     });
+    if (!valid) return;
 
-    // ── Session memory banner ─────────────────────────────────────
-    function addMemory(tag) {
-      if (sessionMemory.includes(tag)) return;
-      sessionMemory.push(tag);
-      const banner = document.getElementById('memory-banner');
-      const tagsEl = document.getElementById('memory-tags');
-      tagsEl.innerHTML = sessionMemory.map(t =>
-        `<span class="memory-tag">${t}</span>`
-      ).join('');
-      banner.classList.add('visible');
+    const pctBelow   = ((market - current) / market) * 100;
+    const maxInc     = reraMaxIncrease(pctBelow);
+    const maxNewRent = Math.round(current * (1 + maxInc / 100));
+    const propInc    = ((proposed - current) / current) * 100;
+    const fmt = n => 'AED ' + Math.round(n).toLocaleString();
+
+    wrap.querySelector('#ri-pctbelow').textContent = pctBelow > 0 ? pctBelow.toFixed(1) + '% below' : 'At or above market';
+    wrap.querySelector('#ri-maxpct').textContent   = maxInc + '%';
+    wrap.querySelector('#ri-maxrent').textContent  = fmt(maxNewRent);
+    wrap.querySelector('#ri-propinc').textContent  = propInc.toFixed(1) + '%';
+
+    const verdict = wrap.querySelector('#ri-verdict');
+    verdict.className = 'rera-verdict';
+
+    if (proposed <= current) {
+      verdict.className += ' allowed';
+      verdict.textContent = '✔ No increase — fully compliant with RERA rules.';
+    } else if (proposed <= maxNewRent) {
+      verdict.className += ' allowed';
+      verdict.textContent = `✔ ${fmt(proposed)} is within the RERA-allowed max of ${fmt(maxNewRent)}. Your landlord can legally proceed.`;
+    } else if (maxInc === 0) {
+      verdict.className += ' illegal';
+      verdict.textContent = `✘ Your rent is within 10% of market — RERA permits no increase. The proposed ${fmt(proposed - current)} rise is not legally enforceable.`;
+    } else {
+      verdict.className += ' illegal';
+      verdict.textContent = `✘ Proposed rent exceeds the RERA cap. Max allowed: ${fmt(maxNewRent)} (${maxInc}% increase). You can dispute this at the RDSC.`;
     }
 
-    function extractMemoryTags(question) {
-      const q = question.toLowerCase();
-      if (q.includes('jvc') || q.includes('jumeirah village')) addMemory('JVC');
-      if (q.includes('marina') || q.includes('dubai marina')) addMemory('Marina');
-      if (q.includes('downtown')) addMemory('Downtown');
-      if (q.includes('deira')) addMemory('Deira');
-      if (q.includes('bur dubai')) addMemory('Bur Dubai');
-      if (q.includes('jlt') || q.includes('jumeirah lake')) addMemory('JLT');
-      if (q.includes('business bay')) addMemory('Business Bay');
-      if (q.includes('rera') || q.includes('rent increase')) addMemory('RERA');
-      if (q.includes('move-in') || q.includes('deposit') || q.includes('moving cost') || q.includes('calculate move')) addMemory('Move-in');
-      if (q.includes('metro')) addMemory('Metro areas');
+    wrap.querySelector('#ri-results').classList.add('visible');
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── Auto-resize textarea ──────────────────────────────────────
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // ── Session memory banner ─────────────────────────────────────
+  function addMemory(tag) {
+    if (sessionMemory.includes(tag)) return;
+    sessionMemory.push(tag);
+    const banner = document.getElementById('memory-banner');
+    const tagsEl = document.getElementById('memory-tags');
+    tagsEl.innerHTML = sessionMemory.map(t =>
+      `<span class="memory-tag">${t}</span>`
+    ).join('');
+    banner.classList.add('visible');
+  }
+
+  function extractMemoryTags(question) {
+    const q = question.toLowerCase();
+    if (q.includes('jvc') || q.includes('jumeirah village')) addMemory('JVC');
+    if (q.includes('marina') || q.includes('dubai marina')) addMemory('Marina');
+    if (q.includes('downtown')) addMemory('Downtown');
+    if (q.includes('deira')) addMemory('Deira');
+    if (q.includes('bur dubai')) addMemory('Bur Dubai');
+    if (q.includes('jlt') || q.includes('jumeirah lake')) addMemory('JLT');
+    if (q.includes('business bay')) addMemory('Business Bay');
+    if (q.includes('rera') || q.includes('rent increase')) addMemory('RERA');
+    if (q.includes('move-in') || q.includes('deposit') || q.includes('moving cost') || q.includes('calculate move')) addMemory('Move-in');
+    if (q.includes('metro')) addMemory('Metro areas');
+  }
+
+  // ── Render helpers ────────────────────────────────────────────
+  function removeWelcome() {
+    if (welcome.parentNode === chat) chat.removeChild(welcome);
+  }
+
+  function renderMarkdown(text) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^[-•]\s(.+)/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>)/gs, '<ul style="padding-left:18px;margin-top:6px">$1</ul>')
+      .replace(/\n/g, '<br>');
+  }
+
+  function appendMsg(role, text, isAgent = false) {
+    removeWelcome();
+    const row = document.createElement('div');
+    row.className = `msg-row ${isAgent ? 'agent' : role}`;
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    if (role === 'bot' || isAgent) {
+      const name = document.createElement('div');
+      name.className = 'bot-name';
+      name.textContent = isAgent ? '🤖 DubaiNest Agent' : 'DubaiNest AI';
+      bubble.appendChild(name);
     }
 
-    // ── Render helpers ────────────────────────────────────────────
-    function removeWelcome() {
-      if (welcome.parentNode === chat) chat.removeChild(welcome);
+    const content = document.createElement('div');
+    content.innerHTML = renderMarkdown(text);
+    bubble.appendChild(content);
+    row.appendChild(bubble);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+    return row;
+  }
+
+  function appendFollowups(chips) {
+    if (!chips || chips.length === 0) return;
+    const row = document.createElement('div');
+    row.className = 'followup-row';
+    chips.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'followup-chip';
+      chip.textContent = c;
+      chip.onclick = () => { input.value = c; sendMessage(); };
+      row.appendChild(chip);
+    });
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // ── Shortlist cards renderer ──────────────────────────────────
+  function renderShortlist(data) {
+    removeWelcome();
+    const wrap = document.createElement('div');
+    wrap.className = 'shortlist-wrap';
+
+    const header = document.createElement('div');
+    header.className = 'shortlist-header';
+    header.innerHTML = `<div class="bot-name">🏆 DubaiNest Agent · Your Shortlist</div>`;
+    wrap.appendChild(header);
+
+    if (data.summary) {
+      const summary = document.createElement('div');
+      summary.className = 'shortlist-summary';
+      summary.textContent = data.summary;
+      wrap.appendChild(summary);
     }
 
-    function renderMarkdown(text) {
-      return text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/^[-•]\s(.+)/gm, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/gs, '<ul style="padding-left:18px;margin-top:6px">$1</ul>')
-        .replace(/\n/g, '<br>');
-    }
+    const cards = document.createElement('div');
+    cards.className = 'shortlist-cards';
 
-    function appendMsg(role, text, isAgent = false) {
-      removeWelcome();
-      const row = document.createElement('div');
-      row.className = `msg-row ${isAgent ? 'agent' : role}`;
-
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble';
-
-      if (role === 'bot' || isAgent) {
-        const name = document.createElement('div');
-        name.className = 'bot-name';
-        name.textContent = isAgent ? '🤖 DubaiNest Agent' : 'DubaiNest AI';
-        bubble.appendChild(name);
-      }
-
-      const content = document.createElement('div');
-      content.innerHTML = renderMarkdown(text);
-      bubble.appendChild(content);
-      row.appendChild(bubble);
-      chat.appendChild(row);
-      chat.scrollTop = chat.scrollHeight;
-      return row;
-    }
-
-    function appendFollowups(chips) {
-      if (!chips || chips.length === 0) return;
-      const row = document.createElement('div');
-      row.className = 'followup-row';
-      chips.forEach(c => {
-        const chip = document.createElement('div');
-        chip.className = 'followup-chip';
-        chip.textContent = c;
-        chip.onclick = () => { input.value = c; sendMessage(); };
-        row.appendChild(chip);
-      });
-      chat.appendChild(row);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    // ── Shortlist cards renderer ──────────────────────────────────
-    function renderShortlist(data) {
-      removeWelcome();
-      const wrap = document.createElement('div');
-      wrap.className = 'shortlist-wrap';
-
-      const header = document.createElement('div');
-      header.className = 'shortlist-header';
-      header.innerHTML = `<div class="bot-name">🏆 DubaiNest Agent · Your Shortlist</div>`;
-      wrap.appendChild(header);
-
-      if (data.summary) {
-        const summary = document.createElement('div');
-        summary.className = 'shortlist-summary';
-        summary.textContent = data.summary;
-        wrap.appendChild(summary);
-      }
-
-      const cards = document.createElement('div');
-      cards.className = 'shortlist-cards';
-
-      (data.shortlist || []).forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'area-card';
-        card.innerHTML = `
+    (data.shortlist || []).forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'area-card';
+      card.innerHTML = `
         <div class="card-rank">${item.rank}</div>
         <div class="card-area">${item.area}</div>
         <div class="card-vibe">${item.vibe || ''}</div>
@@ -1551,141 +1209,140 @@
         ${item.best_for ? `<div class="card-best-for">👥 Best for: ${item.best_for}</div>` : ''}
         ${item.reason ? `<div class="card-reason">✦ ${item.reason}</div>` : ''}
       `;
-        // Add to session memory
-        if (item.area) addMemory(item.area);
-        cards.appendChild(card);
-      });
+      // Add to session memory
+      if (item.area) addMemory(item.area);
+      cards.appendChild(card);
+    });
 
-      wrap.appendChild(cards);
-      chat.appendChild(wrap);
-      chat.scrollTop = chat.scrollHeight;
-    }
+    wrap.appendChild(cards);
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+  }
 
-    // ── Typing indicator ─────────────────────────────────────────
-    function showTyping() {
-      removeWelcome();
-      const row = document.createElement('div');
-      row.className = 'msg-row bot';
-      row.id = 'typing';
-      row.innerHTML = `<div class="bubble"><div class="typing-bubble">
+  // ── Typing indicator ─────────────────────────────────────────
+  function showTyping() {
+    removeWelcome();
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.id = 'typing';
+    row.innerHTML = `<div class="bubble"><div class="typing-bubble">
       <div class="dot"></div><div class="dot"></div><div class="dot"></div>
     </div></div>`;
-      chat.appendChild(row);
-      chat.scrollTop = chat.scrollHeight;
-    }
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+  }
 
-    function removeTyping() {
-      const t = document.getElementById('typing');
-      if (t) t.remove();
-    }
+  function removeTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
 
-    // ── Chip shortcuts ────────────────────────────────────────────
-    function sendChip(el) {
-      input.value = el.textContent;
-      sendMessage();
-    }
+  // ── Chip shortcuts ────────────────────────────────────────────
+  function sendChip(el) {
+    input.value = el.textContent;
+    sendMessage();
+  }
 
-    // ── Main send ─────────────────────────────────────────────────
-    async function sendMessage() {
-      const question = input.value.trim();
-      if (!question) return;
+  // ── Main send ─────────────────────────────────────────────────
+  async function sendMessage() {
+    const question = input.value.trim();
+    if (!question) return;
 
-      appendMsg('user', question);
-      extractMemoryTags(question);
-      input.value = '';
-      input.style.height = 'auto';
+    appendMsg('user', question);
+    extractMemoryTags(question);
+    input.value = '';
+    input.style.height = 'auto';
 
-      // ── Compare intercept — calls backend then renders cards ────
-      const compareAreas = detectCompare(question);
-      if (compareAreas) {
-        sendBtn.disabled = true;
-        showTyping();
-        try {
-          // Send a richer question to RAG so it finds relevant chunks
-          const compareQ = `Compare ${compareAreas.area1} and ${compareAreas.area2} in Dubai: average rent for 1BR and 2BR, metro access, community vibe, and who each area is best suited for`;
-          const res = await fetch(`${API_BASE}/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: compareQ, agent_state: agentState })
-          });
-          const data = await res.json();
-          removeTyping();
-          if (data.error) {
-            appendMsg('bot', '⚠️ ' + data.error);
-          } else {
-            renderCompareCards(compareAreas.area1, compareAreas.area2, data.answer || '');
-            appendFollowups(data.followups || [
-              'Find me the best area to live',
-              'Calculate move-in cost',
-              'Check rent increase RERA'
-            ]);
-          }
-        } catch (err) {
-          removeTyping();
-          appendMsg('bot', '❌ Could not reach the backend. Please try again.');
-        }
-        sendBtn.disabled = false;
-        input.focus();
-        return;
-      }
-
-      // ── Widget intercept — no backend call needed ─────────────
-      const widget = detectWidget(question);
-      if (widget === 'movein') {
-        renderMoveinWidget();
-        appendFollowups(['What areas suit a budget of AED 80K?', 'What is the average rent in JVC?']);
-        sendBtn.disabled = false;
-        input.focus();
-        return;
-      }
-      if (widget === 'rera') {
-        renderReraWidget();
-        appendFollowups(['What is the average rent in Dubai Marina?', 'How do I file a RDSC complaint?']);
-        sendBtn.disabled = false;
-        input.focus();
-        return;
-      }
-
+    // ── Compare intercept — calls backend then renders cards ────
+    const compareAreas = detectCompare(question);
+    if (compareAreas) {
       sendBtn.disabled = true;
       showTyping();
-
       try {
+        // Send a richer question to RAG so it finds relevant chunks
+        const compareQ = `Compare ${compareAreas.area1} and ${compareAreas.area2} in Dubai: average rent for 1BR and 2BR, metro access, community vibe, and who each area is best suited for`;
         const res = await fetch(`${API_BASE}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, agent_state: agentState })
+          body: JSON.stringify({ question: compareQ, agent_state: agentState })
         });
-
         const data = await res.json();
         removeTyping();
-
         if (data.error) {
           appendMsg('bot', '⚠️ ' + data.error);
-        } else if (data.type === 'agent_question') {
-          // Agent is collecting preferences
-          agentState = data.agent_state;
-          appendMsg('bot', data.message, true);
-        } else if (data.type === 'shortlist') {
-          // Render shortlist cards
-          agentState = data.agent_state || { mode: 'normal' };
-          renderShortlist(data);
-          appendFollowups(data.followups);
         } else {
-          // Standard answer
-          agentState = data.agent_state || { mode: 'normal' };
-          appendMsg('bot', data.answer);
-          appendFollowups(data.followups);
+          renderCompareCards(compareAreas.area1, compareAreas.area2, data.answer || '');
+          appendFollowups(data.followups || [
+            'Find me the best area to live',
+            'Calculate move-in cost',
+            'Check rent increase RERA'
+          ]);
         }
-
-      } catch (err) {
+      } catch(err) {
         removeTyping();
         appendMsg('bot', '❌ Could not reach the backend. Please try again.');
       }
-
       sendBtn.disabled = false;
       input.focus();
+      return;
     }
-  </script>
-</body>
 
+    // ── Widget intercept — no backend call needed ─────────────
+    const widget = detectWidget(question);
+    if (widget === 'movein') {
+      renderMoveinWidget();
+      appendFollowups(['What areas suit a budget of AED 80K?', 'What is the average rent in JVC?']);
+      sendBtn.disabled = false;
+      input.focus();
+      return;
+    }
+    if (widget === 'rera') {
+      renderReraWidget();
+      appendFollowups(['What is the average rent in Dubai Marina?', 'How do I file a RDSC complaint?']);
+      sendBtn.disabled = false;
+      input.focus();
+      return;
+    }
+
+    sendBtn.disabled = true;
+    showTyping();
+
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, agent_state: agentState })
+      });
+
+      const data = await res.json();
+      removeTyping();
+
+      if (data.error) {
+        appendMsg('bot', '⚠️ ' + data.error);
+      } else if (data.type === 'agent_question') {
+        // Agent is collecting preferences
+        agentState = data.agent_state;
+        appendMsg('bot', data.message, true);
+      } else if (data.type === 'shortlist') {
+        // Render shortlist cards
+        agentState = data.agent_state || { mode: 'normal' };
+        renderShortlist(data);
+        appendFollowups(data.followups);
+      } else {
+        // Standard answer
+        agentState = data.agent_state || { mode: 'normal' };
+        appendMsg('bot', data.answer);
+        appendFollowups(data.followups);
+      }
+
+    } catch (err) {
+      removeTyping();
+      appendMsg('bot', '❌ Could not reach the backend. Please try again.');
+    }
+
+    sendBtn.disabled = false;
+    input.focus();
+  }
+</script>
+</body>
 </html>
