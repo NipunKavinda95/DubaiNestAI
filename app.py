@@ -129,8 +129,8 @@ USER QUESTION:
 {query_str}
 
 Return ONLY a JSON object, no markdown, no extra text:
-{
-  "area1": {
+{{
+  "area1": {{
     "name": "Exact area name from context",
     "studio": "AED X,XXX/yr or N/A",
     "rent_1br": "AED XX,XXX/yr or N/A",
@@ -138,8 +138,8 @@ Return ONLY a JSON object, no markdown, no extra text:
     "metro": "Yes or No",
     "best_for": "who suits this area",
     "vibe": "one sentence community feel"
-  },
-  "area2": {
+  }},
+  "area2": {{
     "name": "Exact area name from context",
     "studio": "AED X,XXX/yr or N/A",
     "rent_1br": "AED XX,XXX/yr or N/A",
@@ -147,9 +147,9 @@ Return ONLY a JSON object, no markdown, no extra text:
     "metro": "Yes or No",
     "best_for": "who suits this area",
     "vibe": "one sentence community feel"
-  },
+  }},
   "summary": "one sentence comparing the two areas"
-}
+}}
 """
 
 qa_prompt      = PromptTemplate(STANDARD_PROMPT)
