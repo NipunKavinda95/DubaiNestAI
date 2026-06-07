@@ -897,25 +897,37 @@
 
       // Add rows from RAG lines — show as key/value pairs
       const rowsEl = card.querySelector(`#rows-${i}`);
-      if (lines.length > 0) {
-        lines.forEach(line => {
-          const clean = line.replace(/^[-•*]\s*/, '').trim();
-          if (!clean) return;
+
+      // Strip markdown bold (**text**) and skip "not available" lines
+      const stripMd = s => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
+      const skipLine = s => /not available|knowledge base|dubailand|licensed agent/i.test(s);
+
+      const validLines = lines.map(l => stripMd(l.replace(/^[-•*]\s*/, '').trim())).filter(l => l.length > 3 && !skipLine(l));
+
+      if (validLines.length > 0) {
+        validLines.forEach(clean => {
           const row = document.createElement('div');
           row.className = 'compare-row';
-          // Try to split on colon for label/value
           const colon = clean.indexOf(':');
-          if (colon > 0 && colon < 35) {
-            const label = clean.slice(0, colon).trim();
-            const val   = clean.slice(colon + 1).trim();
-            row.innerHTML = `<span class="compare-row-label">${label}</span><span class="compare-row-value">${val}</span>`;
+          if (colon > 0 && colon < 40) {
+            const label = stripMd(clean.slice(0, colon).trim());
+            const val   = stripMd(clean.slice(colon + 1).trim());
+            if (label && val) {
+              row.innerHTML = `<span class="compare-row-label">${label}</span><span class="compare-row-value">${val}</span>`;
+            } else {
+              row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px">${clean}</span>`;
+            }
           } else {
             row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px">${clean}</span>`;
           }
           rowsEl.appendChild(row);
         });
       } else {
-        rowsEl.innerHTML = `<div class="compare-row"><span class="compare-row-label">See full answer below</span></div>`;
+        // Fallback: show a "limited data" note instead of garbage
+        rowsEl.innerHTML = `
+          <div class="compare-row"><span class="compare-row-label" style="color:var(--text-dim);font-size:12px;font-style:italic">
+            Limited data in knowledge base for this area. Try asking directly: "rent in ${area}"
+          </span></div>`;
       }
 
       grid.appendChild(card);
@@ -927,10 +939,14 @@
     // Verdict — bottom summary strip
     const verdict = document.getElementById('cmp-verdict');
     if (verdict) {
-      const summary = ragAnswer.split('\n').find(l => l.length > 40 && !l.startsWith('-') && !l.startsWith('•')) || '';
-      verdict.innerHTML = summary
-        ? `<strong>Summary:</strong> ${summary.trim()}`
-        : `<strong>Tip:</strong> Use the shortlist agent for a personalised recommendation based on your budget.`;
+      const stripMd2 = s => s.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').trim();
+      const summaryLine = ragAnswer.split('\n').find(l =>
+        l.length > 40 && !l.startsWith('-') && !l.startsWith('•') &&
+        !/not available|knowledge base|dubailand|licensed agent/i.test(l)
+      ) || '';
+      verdict.innerHTML = summaryLine
+        ? `<strong>Summary:</strong> ${stripMd2(summaryLine)}`
+        : `<strong>Tip:</strong> Use the shortlist agent ("find me the best area") for a personalised match based on your budget and lifestyle.`;
     }
 
     chat.scrollTop = chat.scrollHeight;
