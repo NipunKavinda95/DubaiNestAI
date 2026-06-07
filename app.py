@@ -294,6 +294,20 @@ def health():
     return jsonify({"status": "ok", "bot": "DubaiNest AI v2 (Agent + RAG)"})
 
 
+@app.route("/debug-compare", methods=["GET"])
+def debug_compare():
+    try:
+        q = "What is the average rent in JVC and Dubai Marina? What is the metro access and community vibe?"
+        response = query_engine.query(q)
+        raw = str(response)
+        # Strip FOLLOWUPS section so it does not confuse things
+        if "FOLLOWUPS:" in raw:
+            raw = raw.split("FOLLOWUPS:")[0].strip()
+        return jsonify({"raw": raw, "lines": raw.split("\n"), "chars": len(raw)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/", methods=["GET"])
 def index_route():
     html = open("static/index.html", encoding="utf-8").read()
