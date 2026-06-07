@@ -797,6 +797,179 @@
         transform: translateY(-6px);
       }
     }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Comparison cards ── */
+    .compare-wrap {
+      padding: 6px 28px;
+      animation: slideUp 0.3s ease;
+    }
+
+    .compare-header {
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+      max-width: 680px;
+    }
+
+    .compare-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .compare-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+
+    .compare-card-header {
+      background: linear-gradient(135deg, rgba(201, 168, 76, 0.12), rgba(201, 168, 76, 0.04));
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+    }
+
+    .compare-area-name {
+      font-family: "Cormorant Garamond", serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .compare-area-tag {
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 0.06em;
+    }
+
+    .compare-rows {
+      padding: 12px 16px;
+    }
+
+    .compare-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 13px;
+    }
+
+    .compare-row:last-child {
+      border-bottom: none;
+    }
+
+    .compare-row-label {
+      color: var(--text-dim);
+    }
+
+    .compare-row-value {
+      color: var(--text);
+      font-weight: 500;
+      text-align: right;
+      max-width: 55%;
+    }
+
+    .compare-row-value.good {
+      color: #81C784;
+    }
+
+    .compare-row-value.mid {
+      color: var(--gold);
+    }
+
+    .compare-verdict {
+      max-width: 680px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin: 0 28px 6px;
+      animation: slideUp 0.3s ease 0.15s both;
+    }
+
+    .compare-verdict strong {
+      color: var(--gold);
+    }
+
+    /* ── Mobile responsive ── */
+    @media (max-width: 600px) {
+      header {
+        padding: 12px 16px;
+      }
+
+      .logo-text h1 {
+        font-size: 17px;
+      }
+
+      #memory-banner {
+        max-width: 160px;
+      }
+
+      .msg-row {
+        padding: 5px 14px;
+      }
+
+      .bubble {
+        max-width: 90%;
+      }
+
+      .shortlist-wrap,
+      .compare-wrap,
+      .widget-wrap,
+      .followup-row {
+        padding: 5px 14px;
+      }
+
+      .compare-grid {
+        grid-template-columns: 1fr;
+        margin: 0 14px 12px;
+      }
+
+      .compare-verdict {
+        margin: 0 14px 6px;
+      }
+
+      footer {
+        padding: 12px 14px 16px;
+      }
+
+      #welcome h2 {
+        font-size: 22px;
+      }
+
+      .chip {
+        font-size: 12px;
+        padding: 7px 13px;
+      }
+    }
   </style>
 </head>
 
@@ -856,6 +1029,15 @@
     </div>
     <div class="footer-note">Nipun Kavinda · Nexora Studio · DubaiNest AI v2</div>
   </footer>
+
+  <!-- ── Area Comparison Template ── -->
+  <template id="tmpl-compare">
+    <div class="compare-wrap">
+      <div class="compare-header">⚡ Area Comparison</div>
+      <div class="compare-grid" id="cmp-grid"></div>
+    </div>
+    <div class="compare-verdict" id="cmp-verdict"></div>
+  </template>
 
   <!-- ── Move-in Cost Calculator Widget Template ── -->
   <template id="tmpl-movein">
@@ -1000,11 +1182,97 @@
       'is this rent increase legal', 'rera calculator', 'legal rent increase',
       'max rent increase', 'rent hike', 'check rent increase', 'rera rent', 'dispute rent'];
 
+    // Compare pattern: "compare X vs Y" or "X vs Y"
+    function detectCompare(q) {
+      const lower = q.toLowerCase();
+      const vsMatch = lower.match(/compare\s+(.+?)\s+(?:vs\.?|versus|and)\s+(.+)/);
+      const shortMatch = lower.match(/^(.+?)\s+(?:vs\.?|versus)\s+(.+)$/);
+      const m = vsMatch || shortMatch;
+      if (!m) return null;
+      return {
+        area1: m[1].trim().replace(/[?!.,]+$/, ''),
+        area2: m[2].trim().replace(/[?!.,]+$/, '')
+      };
+    }
+
     function detectWidget(q) {
       const lower = q.toLowerCase();
       if (MOVEIN_KEYWORDS.some(k => lower.includes(k))) return 'movein';
       if (RERA_KEYWORDS.some(k => lower.includes(k))) return 'rera';
       return null;
+    }
+
+    // ── Render comparison cards (from RAG answer text) ────────────
+    function renderCompareCards(area1, area2, ragAnswer) {
+      removeWelcome();
+      const tmpl = document.getElementById('tmpl-compare');
+      const node = tmpl.content.cloneNode(true);
+
+      // Parse RAG answer into per-area data using simple heuristics
+      // The RAG returns text — we display it structured by area
+      const grid = node.querySelector('#cmp-grid');
+
+      [area1, area2].forEach((area, i) => {
+        const card = document.createElement('div');
+        card.className = 'compare-card';
+        card.style.animation = `cardIn 0.35s ease ${i * 0.1}s both`;
+
+        // Extract lines from RAG answer relevant to this area
+        const lines = ragAnswer.split('\n').filter(l =>
+          l.toLowerCase().includes(area.toLowerCase()) || l.startsWith('-') || l.startsWith('•') || l.match(/AED|rent|metro|vibe|suit|best/i)
+        ).slice(0, 6);
+
+        card.innerHTML = `
+        <div class="compare-card-header">
+          <div class="compare-area-name">${capitalise(area)}</div>
+          <div class="compare-area-tag">Dubai, UAE</div>
+        </div>
+        <div class="compare-rows" id="rows-${i}"></div>
+      `;
+
+        // Add rows from RAG lines — show as key/value pairs
+        const rowsEl = card.querySelector(`#rows-${i}`);
+        if (lines.length > 0) {
+          lines.forEach(line => {
+            const clean = line.replace(/^[-•*]\s*/, '').trim();
+            if (!clean) return;
+            const row = document.createElement('div');
+            row.className = 'compare-row';
+            // Try to split on colon for label/value
+            const colon = clean.indexOf(':');
+            if (colon > 0 && colon < 35) {
+              const label = clean.slice(0, colon).trim();
+              const val = clean.slice(colon + 1).trim();
+              row.innerHTML = `<span class="compare-row-label">${label}</span><span class="compare-row-value">${val}</span>`;
+            } else {
+              row.innerHTML = `<span class="compare-row-label" style="color:var(--text);font-size:12px">${clean}</span>`;
+            }
+            rowsEl.appendChild(row);
+          });
+        } else {
+          rowsEl.innerHTML = `<div class="compare-row"><span class="compare-row-label">See full answer below</span></div>`;
+        }
+
+        grid.appendChild(card);
+        addMemory(capitalise(area));
+      });
+
+      chat.appendChild(node);
+
+      // Verdict — bottom summary strip
+      const verdict = document.getElementById('cmp-verdict');
+      if (verdict) {
+        const summary = ragAnswer.split('\n').find(l => l.length > 40 && !l.startsWith('-') && !l.startsWith('•')) || '';
+        verdict.innerHTML = summary
+          ? `<strong>Summary:</strong> ${summary.trim()}`
+          : `<strong>Tip:</strong> Use the shortlist agent for a personalised recommendation based on your budget.`;
+      }
+
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function capitalise(str) {
+      return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     }
 
     // ── Render move-in widget ─────────────────────────────────────
@@ -1294,6 +1562,38 @@
       extractMemoryTags(question);
       input.value = '';
       input.style.height = 'auto';
+
+      // ── Compare intercept — calls backend then renders cards ────
+      const compareAreas = detectCompare(question);
+      if (compareAreas) {
+        sendBtn.disabled = true;
+        showTyping();
+        try {
+          const res = await fetch(`${API_BASE}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, agent_state: agentState })
+          });
+          const data = await res.json();
+          removeTyping();
+          if (data.error) {
+            appendMsg('bot', '⚠️ ' + data.error);
+          } else {
+            renderCompareCards(compareAreas.area1, compareAreas.area2, data.answer || '');
+            appendFollowups(data.followups || [
+              'Find me the best area to live',
+              'Calculate move-in cost',
+              'Check rent increase RERA'
+            ]);
+          }
+        } catch (err) {
+          removeTyping();
+          appendMsg('bot', '❌ Could not reach the backend. Please try again.');
+        }
+        sendBtn.disabled = false;
+        input.focus();
+        return;
+      }
 
       // ── Widget intercept — no backend call needed ─────────────
       const widget = detectWidget(question);
