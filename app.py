@@ -199,17 +199,6 @@ def health():
     return jsonify({"status": "ok", "bot": "DubaiNest AI v2"})
 
 
-@app.route("/", methods=["GET"])
-def index_route():
-    html = open("static/index.html", encoding="utf-8").read()
-    return render_template_string(html.replace("__API_BASE_URL__", ""))
-
-
-if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=7860)
-
-
 @app.route("/compare", methods=["POST"])
 def compare():
     data = request.get_json()
@@ -220,14 +209,12 @@ def compare():
     area2 = data["area2"].strip()
 
     try:
-        # Query each area separately — reliable, no JSON prompt issues
         q1 = f"What is the average rent for studio, 1BR, 2BR in {area1}? What is metro access, community vibe, and who is it best suited for?"
         q2 = f"What is the average rent for studio, 1BR, 2BR in {area2}? What is metro access, community vibe, and who is it best suited for?"
 
         r1 = str(query_engine.query(q1))
         r2 = str(query_engine.query(q2))
 
-        # Strip followups if present
         if "FOLLOWUPS:" in r1: r1 = r1.split("FOLLOWUPS:")[0].strip()
         if "FOLLOWUPS:" in r2: r2 = r2.split("FOLLOWUPS:")[0].strip()
 
@@ -238,3 +225,14 @@ def compare():
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/", methods=["GET"])
+def index_route():
+    html = open("static/index.html", encoding="utf-8").read()
+    return render_template_string(html.replace("__API_BASE_URL__", ""))
+
+
+if __name__ == "__main__":
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=7860)
