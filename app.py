@@ -39,7 +39,18 @@ if index_name not in existing:
 pinecone_index  = pc.Index(index_name)
 vector_store    = PineconeVectorStore(pinecone_index=pinecone_index)
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
-index           = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
+
+# Check if Pinecone already has our vectors — avoid re-embedding/re-upserting on every restart
+stats = pinecone_index.describe_index_stats()
+existing_vector_count = stats.get("total_vector_count", 0)
+
+if existing_vector_count > 0:
+    print(f"Found {existing_vector_count} existing vectors in Pinecone — loading from vector store (no re-embedding)")
+    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
+else:
+    print("Pinecone index is empty — embedding documents for the first time")
+    index = VectorStoreIndex.from_documents(documents, storage_context=storage_context, show_progress=True)
+
 print("Pinecone ready")
 
 STANDARD_PROMPT = """\
