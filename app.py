@@ -1,5 +1,6 @@
 import os
 import json
+import secrets
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -17,9 +18,14 @@ from pinecone import Pinecone, ServerlessSpec
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.core import StorageContext
 
+ALLOWED_ORIGINS = os.environ.get(
+    "ALLOWED_ORIGINS",
+    "https://nipunkavindaai-dubainestai.hf.space"
+).split(",")
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET", "dubainest-v2")
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+app.secret_key = os.environ.get("FLASK_SECRET") or secrets.token_hex(32)
+CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}}, supports_credentials=True)
 
 print("Building RAG pipeline...")
 
