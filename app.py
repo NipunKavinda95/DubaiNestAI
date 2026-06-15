@@ -1,14 +1,36 @@
 import os
 import json
 import secrets
+import logging
 from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("dubainest")
 
 load_dotenv()
 
 OPENAI_API_KEY   = os.environ.get("OPENAI_API_KEY")
 PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
+
+# Fail fast with a clear message if required secrets are missing,
+# instead of crashing later inside LlamaIndex/Pinecone with a confusing trace.
+missing = []
+if not OPENAI_API_KEY:
+    missing.append("OPENAI_API_KEY")
+if not PINECONE_API_KEY:
+    missing.append("PINECONE_API_KEY")
+
+if missing:
+    raise RuntimeError(
+        f"Missing required environment variable(s): {', '.join(missing)}. "
+        "Set these in your Hugging Face Space secrets (Settings > Variables and secrets) "
+        "or in a local .env file before starting the app."
+    )
+
 
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings, PromptTemplate
 from llama_index.core.node_parser import SentenceSplitter
@@ -26,6 +48,15 @@ ALLOWED_ORIGINS = os.environ.get(
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET") or secrets.token_hex(32)
 CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}}, supports_credentials=True)
+
+# Basic per-IP rate limiting — prevents a single client from running up
+# OpenAI/Pinecone costs with rapid repeated requests.
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["60 per hour"],
+    storage_uri="memory://",
+)
 
 print("Building RAG pipeline...")
 
@@ -137,6 +168,7 @@ def parse_followups(answer):
 
 
 @app.route("/chat", methods=["POST"])
+@limiter.limit("20 per minute")
 def chat():
     data = request.get_json()
     if not data or "question" not in data:
@@ -148,6 +180,9 @@ def chat():
 
     if not question:
         return jsonify({"error": "Empty question"}), 400
+    
+    if len(question) > 500:
+        return jsonify({"error": "Question is too long. Please keep it under 500 characters."}), 400
 
     # Shortlist agent flow
     if mode == "shortlist_collecting":
@@ -189,7 +224,8 @@ def chat():
                     "followups": ["What is the move-in cost?", "Can my landlord raise rent?", "Compare the top 2 areas"]
                 })
             except Exception as e:
-                return jsonify({"error": f"Shortlist failed: {str(e)}"}), 500
+                logger.error(f"Shortlist generation failed: {e}")
+                return jsonify({"error": "Could not generate a shortlist right now. Please try again in a moment."}), 500
 
     # Detect shortlist intent
     if mode == "normal" and is_shortlist_intent(question):
@@ -208,7 +244,8 @@ def chat():
             followups = ["What is the average rent in that area?", "What are move-in costs?", "Is this area close to metro?"]
         return jsonify({"type": "answer", "answer": clean, "question": question, "followups": followups, "agent_state": {"mode": "normal"}})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Chat query failed: {e}")
+        return jsonify({"error": "Something went wrong answering your question. Please try again."}), 500
 
 
 @app.route("/health", methods=["GET"])
@@ -217,6 +254,7 @@ def health():
 
 
 @app.route("/compare", methods=["POST"])
+@limiter.limit("10 per minute")
 def compare():
     data = request.get_json()
     if not data or "area1" not in data or "area2" not in data:
@@ -224,6 +262,12 @@ def compare():
 
     area1 = data["area1"].strip()
     area2 = data["area2"].strip()
+
+    if not area1 or not area2:
+        return jsonify({"error": "Both area names are required"}), 400
+
+    if len(area1) > 100 or len(area2) > 100:
+        return jsonify({"error": "Area names are too long"}), 400
 
     try:
         q1 = f"What is the average rent for studio, 1BR, 2BR in {area1}? What is metro access, community vibe, and who is it best suited for?"
@@ -241,7 +285,8 @@ def compare():
             "area2": {"name": area2.title(), "text": r2}
         })
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Compare query failed: {e}")
+        return jsonify({"error": "Could not compare those areas right now. Please try again."}), 500
 
 
 @app.route("/", methods=["GET"])
