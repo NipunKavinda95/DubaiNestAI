@@ -15,7 +15,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code and data files
 COPY app.py .
-COPY app_lang.py .
 COPY data/ ./data/
 COPY static/ ./static/
 
@@ -24,4 +23,4 @@ EXPOSE 7860
 
 # Start Flask
 CMD ["python", "app.py"]
-#CMD ["python", "app_lang.py"]
+
