@@ -831,6 +831,9 @@
   // Session memory — topics explored this session
   let sessionMemory = [];
 
+  // Conversation history — last 4 turns sent with each request for context
+  let conversationHistory = [];
+
   // ── Widget keyword detection ──────────────────────────────────
   const MOVEIN_KEYWORDS = ['move-in cost', 'movein cost', 'move in cost', 'moving cost',
     'how much to move', 'deposit calculator', 'calculate deposit',
@@ -1267,7 +1270,7 @@
       const res = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, agent_state: agentState })
+        body: JSON.stringify({ question, agent_state: agentState, history: conversationHistory })
       });
 
       const data = await res.json();
@@ -1289,6 +1292,13 @@
         agentState = data.agent_state || { mode: 'normal' };
         appendMsg('bot', data.answer);
         appendFollowups(data.followups);
+
+        // Update conversation history — keep last 4 turns (8 entries)
+        conversationHistory.push({ role: 'user', text: question });
+        conversationHistory.push({ role: 'bot', text: data.answer });
+        if (conversationHistory.length > 8) {
+          conversationHistory = conversationHistory.slice(-8);
+        }
       }
 
     } catch (err) {
